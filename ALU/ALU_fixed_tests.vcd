@@ -1,0 +1,76 @@
+$date
+	Sun Apr 28 12:03:11 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module ALU_fixed_tests $end
+$var wire 16 ! result [15:0] $end
+$var reg 16 " A [15:0] $end
+$var reg 16 # B [15:0] $end
+$var reg 4 $ opcode [3:0] $end
+$scope module ALU_inst $end
+$var wire 16 % A [15:0] $end
+$var wire 16 & B [15:0] $end
+$var wire 4 ' opcode [3:0] $end
+$var reg 16 ( result [15:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#0
+$dumpvars
+b11110 (
+b0 '
+b10100 &
+b1010 %
+b0 $
+b10100 #
+b1010 "
+b11110 !
+$end
+#1
+b10100 !
+b10100 (
+b1 $
+b1 '
+b11110 #
+b11110 &
+b110010 "
+b110010 %
+#2
+b0 !
+b0 (
+b10 $
+b10 '
+b10101010 #
+b10101010 &
+b1010101 "
+b1010101 %
+#3
+b11111111 !
+b11111111 (
+b11 $
+b11 '
+#4
+b110000 !
+b110000 (
+b100 $
+b100 '
+b10 #
+b10 &
+b1100 "
+b1100 %
+#5
+b1100 !
+b1100 (
+b101 $
+b101 '
+b110000 "
+b110000 %
+#6
