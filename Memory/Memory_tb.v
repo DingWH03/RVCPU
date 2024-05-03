@@ -6,7 +6,7 @@ always #5 clk = ~clk; // 5个时间单位翻转一次时钟
 
 // 模块实例化
 reg rw_enable;
-reg [9:0] address;
+reg [8:0] address;
 reg [15:0] data_in;
 wire [15:0] data_out;
 

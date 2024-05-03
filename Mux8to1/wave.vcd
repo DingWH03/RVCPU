@@ -1,0 +1,91 @@
+$date
+	Tue Apr 30 15:19:50 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module mux8to1_tb $end
+$var wire 1 ! o $end
+$var parameter 32 " CLK_PERIOD $end
+$var reg 1 # clk $end
+$var reg 1 $ i0 $end
+$var reg 1 % i1 $end
+$var reg 1 & i2 $end
+$var reg 1 ' i3 $end
+$var reg 1 ( i4 $end
+$var reg 1 ) i5 $end
+$var reg 1 * i6 $end
+$var reg 1 + i7 $end
+$var reg 1 , s0 $end
+$var reg 1 - s1 $end
+$var reg 1 . s2 $end
+$scope module uut $end
+$var wire 1 $ i0 $end
+$var wire 1 % i1 $end
+$var wire 1 & i2 $end
+$var wire 1 ' i3 $end
+$var wire 1 ( i4 $end
+$var wire 1 ) i5 $end
+$var wire 1 * i6 $end
+$var wire 1 + i7 $end
+$var wire 1 , s0 $end
+$var wire 1 - s1 $end
+$var wire 1 . s2 $end
+$var reg 1 ! o $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b1010 "
+$end
+#0
+$dumpvars
+0.
+0-
+0,
+0+
+1*
+0)
+1(
+0'
+1&
+0%
+1$
+x#
+1!
+$end
+#100000
+0!
+1,
+#200000
+1!
+1-
+0,
+#300000
+0!
+1,
+#400000
+1!
+1.
+0-
+0,
+#500000
+0!
+1,
+#600000
+1!
+1-
+0,
+#700000
+0!
+1,
+#800000
+1!
+0.
+0-
+0,
+#810000
