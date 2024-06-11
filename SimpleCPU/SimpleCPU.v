@@ -1,6 +1,7 @@
 module SimpleCPU (
     input wire clk,              // 时钟输入
     input wire reset,            // 复位输入
+    input wire [15:0] data_out,  // 读取内存中的数据
     output wire rw_enable,       // 读写内存使能，低电平有效
     output wire [7:0] address,   // 存储器地址
     output wire [15:0] data_in   // 写入数据到内存
@@ -12,20 +13,13 @@ module SimpleCPU (
     wire [2:0] reg_read1, reg_read2, reg_write;  // 寄存器读写地址
     wire reg_write_enable;    // 寄存器写使能
 
+    assign instruction = data_out;
+
     // PC 模块实例化
     PC pc_inst (
         .clk(clk),
         .reset(reset),
         .pc(address)  // PC 输出地址
-    );
-
-    // InstructionMemory 模块实例化
-    InstructionMemory im_inst (
-        .clk(clk),
-        .rw_enable(1'b1),  // 读使能，始终为高
-        .address(address),
-        .data_in(data_in),
-        .data_out(instruction)  // 从指令内存读取的指令
     );
 
     // CU 模块实例化
@@ -57,10 +51,5 @@ module SimpleCPU (
         .opcode(ALU_op),
         .result(ALU_result)     // ALU 计算结果输出
     );
-
-    // 输出信号连接
-    assign rw_enable = 1'b0;     // 读写内存使能信号，低电平有效
-    assign address = pc_inst.pc; // 将 PC 输出的地址作为存储器地址
-    assign data_in = 16'h0000;   // 写入数据，默认为0
 
 endmodule

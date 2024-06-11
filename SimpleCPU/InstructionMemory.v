@@ -8,8 +8,19 @@ module InstructionMemory (
 
 reg [15:0] data_out_r;
 assign data_out = data_out_r;
-// 存储器数组，1K字节，每个存储位置16位
+// 存储器数组，512字节，每个存储位置16位
 reg [15:0] memory [0:255];
+
+// 初始化存储器的前几个位置
+initial begin
+    memory[0] = 16'h0000;  // 地址0
+    memory[1] = 16'h0001;  // 地址1
+    memory[2] = 16'h0002;  // 地址2
+    // 可以添加更多的初始化...
+
+    // 其余位置默认为全零
+end
+
 
 // 读写操作
 always @(posedge clk)
