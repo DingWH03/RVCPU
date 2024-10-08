@@ -1,19 +1,32 @@
-module ALU (
-    input [15:0] A, B,
-    input [3:0] opcode,
-    output reg [15:0] result
+module ALU(
+input [31:0] SrcA,SrcB,
+input [3:0]  func,
+output reg [31:0] ALUout
 );
 
-always @ (A, B, opcode) begin
-    case (opcode)
-        4'b0000: result <= A + B;       // 加法
-        4'b0001: result <= A - B;       // 减法
-        4'b0010: result <= A & B;       // 与操作
-        4'b0011: result <= A | B;       // 或操作
-        4'b0100: result <= A << B;      // 逻辑左移
-        4'b0101: result <= A >> B;      // 逻辑右移
-        default: result <= 16'b0;       // 默认输出为0
-    endcase
-end
+wire signed [31:0] signed_a;
+wire signed [31:0] signed_b;
+
+assign signed_a = SrcA;
+assign signed_b = SrcB;
+
+always@(*)
+begin
+  case(func)
+		/*待填*/
+      4'b0000: ALUout = signed_a + signed_b;
+      4'b1000: ALUout = signed_a - signed_b;
+      4'b0001: ALUout = signed_a << signed_b[4:0];
+      4'b0010: ALUout = signed_a < signed_b?1:0;
+      4'b0011: ALUout = SrcA < SrcB?1:0;
+      4'b0100: ALUout = signed_a ^ signed_b;
+      4'b0101: ALUout = signed_a >> signed_b[4:0];
+      4'b1101: ALUout = signed_a >>> signed_b[4:0];
+      4'b0110: ALUout = signed_a | signed_b;
+      4'b0111: ALUout = signed_a & signed_b;
+      4'b1110: ALUout = SrcB;
+      default: ALUout = 0;
+	endcase
+end 
 
 endmodule

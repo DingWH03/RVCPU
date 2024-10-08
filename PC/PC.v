@@ -1,16 +1,18 @@
-module PC (
-    input wire clk,       // 时钟输入
-    input wire reset,     // 复位输入
-    output reg [7:0] pc   // 8位程序计数器输出
-);
-
-// 初始化计数器
-always @ (posedge clk or posedge reset)
+module PC(
+input              clk,
+input              rst,
+input              JUMP,
+input       [31:0] JUMP_PC,
+output reg  [31:0] pc);
+wire [31:0] pc_plus4;
+assign pc_plus4 = pc + 32'h4;
+//计算PC
+always@(posedge clk or posedge rst)
 begin
-    if (reset)        // 当复位信号为高电平时
-        pc <= 8'b00000000;  // 将计数器复位为0
-    else if (clk)    // 在每个时钟的上升沿
-        pc <= pc + 1; // 计数器加1
+    if (rst) pc = 0;
+    else begin
+        if (JUMP) pc = JUMP_PC;
+        else pc = pc_plus4;
+    end
 end
-
 endmodule
