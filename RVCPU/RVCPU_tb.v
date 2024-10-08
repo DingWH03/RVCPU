@@ -37,7 +37,7 @@ module RVCPU_tb;
     // 生成波形文件
     initial begin
         $dumpfile("output/waveform.vcd");  // 指定波形文件名称
-        $dumpvars(0, rvcpu);      // 记录 RVCPU_tb 的所有变量
+        $dumpvars(0, RVCPU_tb);      // 记录 RVCPU_tb 的所有变量
     end
 
 endmodule

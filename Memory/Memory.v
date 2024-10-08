@@ -24,7 +24,7 @@ begin
   $readmemh("./problem/inst.dat",mem);
 end
 
-    assign im_dout = mem[im_addr];
+    assign im_dout = {im_addr[31:14], im_addr[1:0]} == 0 ? mem[im_addr] : 0;
 //由于不能跨单位读取数据，地址最低两位的数值决定了当前单位能读取到的数据，即mem_out
 always@(*)
 begin

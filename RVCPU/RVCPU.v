@@ -2,8 +2,6 @@ module RVCPU(
 input clk,
 input rst
 );
-// wire        clk;
-// wire        rst;
 
 wire    [31:0]  inst;
 
@@ -12,8 +10,8 @@ reg     [31:0]  rf_wd;
 wire            rf_wr_en;
 wire    [31:0]  rf_rd1,rf_rd2;
   
-wire [31:0] pc;
-wire [31:0] pc_plus4;
+wire [63:0] pc;
+wire [63:0] pc_plus4;
 wire do_jump;
 wire JUMP;
   
@@ -81,7 +79,7 @@ ALU alu0(
 );
 mem mem0(
 	.clk        (clk),
-	.im_addr    (pc),
+	.im_addr    (pc[31:0]),
 	.im_dout    (inst),
 	.dm_rd_ctrl (dm_rd_ctrl),
 	.dm_wr_ctrl (dm_wr_ctrl),
