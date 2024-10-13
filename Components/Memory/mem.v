@@ -18,7 +18,7 @@ end
 
 initial
 begin
-  $readmemh("./problem/inst.dat",mem);
+  $readmemh("./meminit/inst.dat",mem);
 end
 
 assign im_dout[7:0] = mem[im_addr];
