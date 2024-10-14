@@ -1,5 +1,22 @@
 # RVCPU_DEMO
 
+## Quick Start
+
+### Installation
+
+Using iverilog to simulate currently.
+
+```bash
+sudo apt install make iverilog gtkwave # For debian/ubuntu
+```
+
+### Run
+
+```bash
+make # compile
+make run # contribute to waveform.vcd
+```
+
 ## Instrustion Set
 
 RISC-V 64 with instruction of 32 bit
