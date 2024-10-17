@@ -31,8 +31,14 @@ assign alu_out_MEM_wire = alu_out_MEM;
 wire [63:0] dm_dout_MEM;
 reg [63:0] dm_dout_WB;  
 
-wire [1:0] rf_wr_sel_WB;
-wire rf_wr_en_WB;
+reg [1:0] rf_wr_sel_WB;
+wire [1:0] rf_wr_sel_WB_wire;
+assign rf_wr_sel_WB_wire = rf_wr_sel_WB;
+
+reg rf_wr_en_WB;
+wire rf_wr_en_WB_wire;
+assign rf_wr_en_WB_wire = rf_wr_en_WB;
+
 wire do_jump_ID, JUMP_EX;
 wire [63:0] alu_a_EX, alu_b_EX;
 wire [3:0] alu_ctrl_EX;
@@ -79,13 +85,22 @@ always@(posedge clk or posedge rst) begin
     if (rst) begin
         pc_EX <= 64'b0;
         imm_out_EX <= 64'b0;
-        // 其他信号同理
+        comp_ctrl_EX <= 3'b0;   // 比较器控制信号
+        alu_a_sel_EX <= 1'b0;   // ALU A源选择信号
+        alu_b_sel_EX <= 1'b0;   // ALU B源选择信号
+        alu_ctrl_EX <= 4'b0;    // ALU控制信号
+        BrE_EX <= 1'b0;         // 分支执行信号
     end else begin
         pc_EX <= pc_ID;
         imm_out_EX <= imm_out_ID;
-        // 其他信号同理
+        comp_ctrl_EX <= comp_ctrl_ID;
+        alu_a_sel_EX <= alu_a_sel_EX;
+        alu_b_sel_EX <= alu_b_sel_EX;
+        alu_ctrl_EX <= alu_ctrl_EX;
+        BrE_EX <= BrE_EX;
     end
 end
+
 
 // EX阶段
 assign JUMP_EX = BrE_EX || do_jump_ID;
@@ -104,13 +119,18 @@ always@(posedge clk or posedge rst) begin
     if (rst) begin
         pc_MEM <= 64'b0;
         alu_out_MEM <= 64'b0;
-        // 其他信号同理
+        dm_rd_ctrl_MEM <= 3'b0;  // 数据存储器读控制信号
+        dm_wr_ctrl_MEM <= 2'b0;  // 数据存储器写控制信号
+        BrE_MEM <= 1'b0;         // 分支执行信号
     end else begin
         pc_MEM <= pc_EX;
         alu_out_MEM <= alu_out_EX;
-        // 其他信号同理
+        dm_rd_ctrl_MEM <= dm_rd_ctrl_MEM;
+        dm_wr_ctrl_MEM <= dm_wr_ctrl_MEM;
+        BrE_MEM <= BrE_EX;
     end
 end
+
 
 // MEM阶段
 mem mem0(
@@ -130,12 +150,17 @@ always@(posedge clk or posedge rst) begin
         pc_WB <= 64'b0;
         dm_dout_WB <= 64'b0;
         alu_out_WB <= 64'b0;
+        rf_wr_sel_WB <= 2'b0;  // 写回选择信号
+        rf_wr_en_WB <= 1'b0;   // 写回使能信号
     end else begin
         pc_WB <= pc_MEM;
         dm_dout_WB <= dm_dout_MEM;
         alu_out_WB <= alu_out_MEM;
+        rf_wr_sel_WB <= rf_wr_sel_WB;
+        rf_wr_en_WB <= rf_wr_en_WB;
     end
 end
+
 
 // WB阶段
 always@(*) begin
@@ -152,7 +177,7 @@ end
 ctrl ctrl0(
     .inst(inst_ID),        // 译码阶段使用的指令
     .rf_wr_en(rf_wr_en_WB),
-    .rf_wr_sel(rf_wr_sel_WB),
+    .rf_wr_sel(rf_wr_sel_WB_wire),
     .do_jump(do_jump_ID),
     .BrType(comp_ctrl_ID),
     .alu_a_sel(alu_a_sel_EX),
