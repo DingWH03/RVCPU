@@ -8,11 +8,11 @@ output            alu_a_sel,
 output            alu_b_sel,
 output reg    [3:0]   alu_ctrl,
 output reg    [2:0]   dm_rd_ctrl,
-output reg    [1:0]   dm_wr_ctrl
+output reg    [1:0]   dm_wr_ctrl,
+input   wire    [6:0]   opcode,
+input   wire    [2:0]   funct3,
+input   wire    [6:0]   funct7
 );
-wire    [6:0]   opcode;
-wire    [2:0]   funct3;
-wire    [6:0]   funct7;
 
 wire    is_lui;
 wire    is_auipc;
@@ -63,9 +63,9 @@ wire    is_r_type;
 wire    is_i_type;
 wire    is_s_type;
 
-assign  opcode  = inst[6:0];
-assign  funct7  = inst[31:25];
-assign  funct3  = inst[14:12];
+// assign  opcode  = inst[6:0];
+// assign  funct7  = inst[31:25];
+// assign  funct3  = inst[14:12];
 
 assign  is_lui  = (opcode == 7'h37) ;
 assign  is_auipc= (opcode == 7'h17) ;

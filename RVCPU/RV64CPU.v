@@ -111,7 +111,7 @@ ALU alu0(
     .SrcA(alu_a_EX),
     .SrcB(alu_b_EX),
     .func(alu_ctrl_EX),
-    .ALUout(alu_out_EX)  // alu_out_EX 是 wire
+    .ALUout(alu_out_EX)
 );
 
 // EX/MEM流水线寄存器

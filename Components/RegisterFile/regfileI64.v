@@ -18,10 +18,11 @@ end
 // 写入寄存器，确保x0（即reg_file[0]）始终为0
 always @(negedge clk) begin
     if (WE && A3 != 5'b00000)      // 当写使能有效且目标不是x0时才写入
-        reg_file[A3] = WD;
+        reg_file[A3] = WD;  // 信号A3控制写入位置
 end
 
 // 读取寄存器
+// 信号A1、A2控制读取地址
 assign RD1 = (A1 == 5'b00000) ? 64'b0 : reg_file[A1];  // 如果读取的是x0，输出0
 assign RD2 = (A2 == 5'b00000) ? 64'b0 : reg_file[A2];  // 如果读取的是x0，输出0
 
