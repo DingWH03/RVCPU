@@ -1,3 +1,8 @@
+// 文件名: pipeline_id_stage.v
+// 功能: 5级流水线CPU中的指令解码阶段 (Instruction Decode Stage)
+// mem: no
+// regs: yes
+
 module pipeline_id_stage (
     input wire clk,                   // 时钟信号
     input wire reset,                 // 复位信号，低电平有效
@@ -16,6 +21,8 @@ module pipeline_id_stage (
     output reg [6:0] funct7_ID,      // 解码出的功能码 funct7
     output reg [63:0] imm_ID,        // 解码出的立即数
 
+    output reg pc_out,               // 输出到下一阶段的PC
+
     // 控制信号
     output reg rf_wr_en,             // 寄存器写使能信号
     output reg do_jump,              // 跳转控制信号
@@ -25,7 +32,7 @@ module pipeline_id_stage (
     output reg [2:0] BrType,         // 分支类型控制信号
     output reg [1:0] rf_wr_sel,      // 寄存器写回数据来源选择
 
-    // 与内存模块连接的信号
+    // 与内存模块连接的控制信号
     output reg [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
     output reg [1:0] dm_wr_ctrl,     // 数据存储器写入控制信号
 
@@ -83,6 +90,7 @@ module pipeline_id_stage (
             rf_wr_sel      <= 2'b0;
             dm_rd_ctrl     <= 3'b0;
             dm_wr_ctrl     <= 2'b0;
+            pc_out         <= 0;
         end else begin
             // 锁存解码得到的字段
             opcode_ID      <= instruction_ID[6:0];    // 操作码
@@ -111,6 +119,8 @@ module pipeline_id_stage (
             rf_wr_sel      <= rf_wr_sel_wire;
             dm_rd_ctrl     <= dm_rd_ctrl_wire;
             dm_wr_ctrl     <= dm_wr_ctrl_wire;
+
+            pc_out         <= pc_ID;
         end
     end
 

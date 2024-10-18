@@ -49,158 +49,198 @@ wire BrE_EX, BrE_MEM;
 wire [2:0] dm_rd_ctrl_MEM;
 wire [1:0] dm_wr_ctrl_MEM;
 
-// IF阶段
-assign pc_plus4_IF = pc_IF + 64'h4;
+wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递
 
-// IF/ID流水线寄存器
-always@(posedge clk or posedge rst) begin
-    if (rst) begin
-        pc_ID <= 64'b0;
-        inst_ID <= 32'b0;
-    end else begin
-        pc_ID <= pc_plus4_IF;
-        inst_ID <= inst_IF;
-    end
-end
+wire [31:0] instruction_IF; // if阶段取出的指令连接到id阶段
 
-// ID阶段
-reg_file reg_file0(
-    .clk(clk),
-    .A1(inst_ID[19:15]),
-    .A2(inst_ID[24:20]),
-    .A3(inst_ID[11:7]),
-    .WD(rf_wd_WB_wire),
-    .WE(rf_wr_en_WB),
-    .RD1(rf_rd1_ID),  // rf_rd1_ID 是 wire
-    .RD2(rf_rd2_ID)   // rf_rd2_ID 是 wire
-);
+wire [31:0] im_dout_mem;
+wire [63:0] im_addr_mem; // mem到if阶段的连线
 
-imm imm0(
-    .inst(inst_ID),
-    .out(imm_out_ID)  // imm_out_ID 是 wire
-);
+// stage1
+// module pipeline_if_stage (
+//     input wire clk,              // 时钟信号
+//     input wire reset,            // 复位信号，低电平有效
+//     input wire stall,            // 流水线暂停信号
+//     input wire branch_taken,     // 分支跳转信号
+//     input wire [63:0] branch_target, // 分支跳转目标地址
+    
+//     input wire [31:0] im_dout,   // 连接到顶层模块中的指令存储器输出数据
+//     output reg [63:0] im_addr,   // 连接到顶层模块中的指令存储器地址
+    
+//     output reg [63:0] pc_IF,     // 当前PC值
+//     output reg [31:0] instruction_IF  // 取到的指令
+// );
 
-// ID/EX流水线寄存器
-always@(posedge clk or posedge rst) begin
-    if (rst) begin
-        pc_EX <= 64'b0;
-        imm_out_EX <= 64'b0;
-        comp_ctrl_EX <= 3'b0;   // 比较器控制信号
-        alu_a_sel_EX <= 1'b0;   // ALU A源选择信号
-        alu_b_sel_EX <= 1'b0;   // ALU B源选择信号
-        alu_ctrl_EX <= 4'b0;    // ALU控制信号
-        BrE_EX <= 1'b0;         // 分支执行信号
-    end else begin
-        pc_EX <= pc_ID;
-        imm_out_EX <= imm_out_ID;
-        comp_ctrl_EX <= comp_ctrl_ID;
-        alu_a_sel_EX <= alu_a_sel_EX;
-        alu_b_sel_EX <= alu_b_sel_EX;
-        alu_ctrl_EX <= alu_ctrl_EX;
-        BrE_EX <= BrE_EX;
-    end
-end
-
-
-// EX阶段
-assign JUMP_EX = BrE_EX || do_jump_ID;
-assign alu_a_EX = alu_a_sel_EX ? rf_rd1_ID : pc_EX;
-assign alu_b_EX = alu_b_sel_EX ? imm_out_EX : rf_rd2_ID;
-
-ALU alu0(
-    .SrcA(alu_a_EX),
-    .SrcB(alu_b_EX),
-    .func(alu_ctrl_EX),
-    .ALUout(alu_out_EX)
-);
-
-// EX/MEM流水线寄存器
-always@(posedge clk or posedge rst) begin
-    if (rst) begin
-        pc_MEM <= 64'b0;
-        alu_out_MEM <= 64'b0;
-        dm_rd_ctrl_MEM <= 3'b0;  // 数据存储器读控制信号
-        dm_wr_ctrl_MEM <= 2'b0;  // 数据存储器写控制信号
-        BrE_MEM <= 1'b0;         // 分支执行信号
-    end else begin
-        pc_MEM <= pc_EX;
-        alu_out_MEM <= alu_out_EX;
-        dm_rd_ctrl_MEM <= dm_rd_ctrl_MEM;
-        dm_wr_ctrl_MEM <= dm_wr_ctrl_MEM;
-        BrE_MEM <= BrE_EX;
-    end
-end
-
-
-// MEM阶段
+// 顶层模块初始化mem
 mem mem0(
+	.clk        (clk),
+	.im_addr    (im_addr_mem),
+	.im_dout    (im_dout_mem),
+	.dm_rd_ctrl (dm_rd_ctrl),
+	.dm_wr_ctrl (dm_wr_ctrl),
+	.dm_addr    (alu_out),
+	.dm_din     (rf_rd2),
+	.dm_dout    (dm_dout)
+);
+
+// 顶层模块初始化寄存器堆
+reg_file reg_file0(
+	.clk        (clk),
+	.A1         (inst[19:15]),
+	.A2         (inst[24:20]),
+	.A3         (inst[11:7]),
+	.WD         (rf_wd),
+	.WE         (rf_wr_en),
+	.RD1        (rf_rd1),
+	.RD2        (rf_rd2)
+);
+
+pipeline_if_stage stage1(
     .clk(clk),
-    .im_addr(pc_MEM),
-    .im_dout(inst_IF),  // 取指阶段的指令
-    .dm_rd_ctrl(dm_rd_ctrl_MEM),
-    .dm_wr_ctrl(dm_wr_ctrl_MEM),
-    .dm_addr(alu_out_MEM),
-    .dm_din(rf_rd2_ID), // 从ID阶段传过来的rf_rd2_ID
-    .dm_dout(dm_dout_MEM)  // dm_dout_MEM 是 wire
+    .reset(reset),
+    .stall(),
+    .branch_taken(),
+    .branch_target(),
+    .im_dout(im_dout_mem),
+    .im_addr(im_addr_mem),
+    .pc_IF(pc_if_to_id),
+    .instruction_IF(instruction_IF)
+
 );
 
-// MEM/WB流水线寄存器
-always@(posedge clk or posedge rst) begin
-    if (rst) begin
-        pc_WB <= 64'b0;
-        dm_dout_WB <= 64'b0;
-        alu_out_WB <= 64'b0;
-        rf_wr_sel_WB <= 2'b0;  // 写回选择信号
-        rf_wr_en_WB <= 1'b0;   // 写回使能信号
-    end else begin
-        pc_WB <= pc_MEM;
-        dm_dout_WB <= dm_dout_MEM;
-        alu_out_WB <= alu_out_MEM;
-        rf_wr_sel_WB <= rf_wr_sel_WB;
-        rf_wr_en_WB <= rf_wr_en_WB;
-    end
-end
 
+//stage2
+// module pipeline_id_stage (
+//     input wire clk,                   // 时钟信号
+//     input wire reset,                 // 复位信号，低电平有效
+//     input wire [31:0] instruction_ID, // 从IF阶段传来的指令
+//     input wire [63:0] pc_ID,          // 从IF阶段传来的PC值
 
-// WB阶段
-always@(*) begin
-    case(rf_wr_sel_WB)
-        2'b00:  rf_wd_WB = 64'h0;
-        2'b01:  rf_wd_WB = pc_WB;
-        2'b10:  rf_wd_WB = alu_out_WB;
-        2'b11:  rf_wd_WB = dm_dout_WB;
-        default:rf_wd_WB = 64'h0;
-    endcase
-end
+//     input wire [63:0] data_reg_read_1, data_reg_read_2, // 从寄存器堆读取的数据
+    
+//     output reg [63:0] reg_data1_ID,  // 解码出的源操作数1
+//     output reg [63:0] reg_data2_ID,  // 解码出的源操作数2
+//     output reg [4:0] rs1_ID,         // 源寄存器1地址
+//     output reg [4:0] rs2_ID,         // 源寄存器2地址
+//     output reg [4:0] rd_ID,          // 目的寄存器地址
+//     output reg [6:0] opcode_ID,      // 解码出的操作码
+//     output reg [2:0] funct3_ID,      // 解码出的功能码 funct3
+//     output reg [6:0] funct7_ID,      // 解码出的功能码 funct7
+//     output reg [63:0] imm_ID,        // 解码出的立即数
 
-// 控制信号的传递
-ctrl ctrl0(
-    .inst(inst_ID),        // 译码阶段使用的指令
-    .rf_wr_en(rf_wr_en_WB),
-    .rf_wr_sel(rf_wr_sel_WB_wire),
-    .do_jump(do_jump_ID),
-    .BrType(comp_ctrl_ID),
-    .alu_a_sel(alu_a_sel_EX),
-    .alu_b_sel(alu_b_sel_EX),
-    .alu_ctrl(alu_ctrl_EX),
-    .dm_rd_ctrl(dm_rd_ctrl_MEM),
-    .dm_wr_ctrl(dm_wr_ctrl_MEM)
-);
+//     // 控制信号
+//     output reg rf_wr_en,             // 寄存器写使能信号
+//     output reg do_jump,              // 跳转控制信号
+//     output reg alu_a_sel,            // ALU 输入A选择信号
+//     output reg alu_b_sel,            // ALU 输入B选择信号
+//     output reg [3:0] alu_ctrl,       // ALU 控制信号
+//     output reg [2:0] BrType,         // 分支类型控制信号
+//     output reg [1:0] rf_wr_sel,      // 寄存器写回数据来源选择
 
-// PC模块
-PC	pc0(
+//     // 与内存模块连接的信号
+//     output reg [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
+//     output reg [1:0] dm_wr_ctrl,     // 数据存储器写入控制信号
+
+//     output reg [4:0] addr_reg_read_1, addr_reg_read_2 // 连接源寄存器堆地址
+// );
+
+pipeline_id_stage stage2(
     .clk(clk),
-    .rst(rst),
-    .JUMP(JUMP_EX),
-    .JUMP_PC(pc_EX + imm_out_EX_wire),
-    .pc(pc_IF_wire)  // 给出当前取指阶段的PC
+    .reset(reset),
+    .instruction_ID(instruction_IF),
+    .pc_ID(pc_if_to_id),
+    .data_reg_read_1(),
+    .data_reg_read_2(),
+    .reg_data1_ID(),
+    .reg_data2_ID(),
+    .rs1_ID(),
+    .rs2_ID(),
+    .rd_ID(),
+    .opcode_ID(),
+    .funct3_ID(),
+    .funct7_ID(),
+    .imm_ID(),
+    .rf_wr_en(),
+    .do_jump(),
+    .alu_a_sel(),
+    .alu_b_sel(),
+    .alu_ctrl(),
+    .BrType(),
+    .rf_wr_sel(),
+    .dm_rd_ctrl(),
+    .dm_wr_ctrl(),
+    .addr_reg_read_1(),
+    .addr_reg_read_2()
+
 );
 
-branch branch0(
-    .REG1(rf_rd1_ID),
-    .REG2(rf_rd2_ID),
-    .Type(comp_ctrl_EX),
-    .BrE(BrE_EX)
-);
+
+// stage3
+// module pipeline_ex_stage (
+//     input wire clk,                  // 时钟信号
+//     input wire reset,                // 复位信号，低电平有效
+//     input wire [63:0] reg_data1_EX,  // 从ID阶段传递的源操作数1
+//     input wire [63:0] reg_data2_EX,  // 从ID阶段传递的源操作数2
+//     input wire [63:0] imm_EX,        // 从ID阶段传递的立即数
+//     input wire [4:0] rs1_EX,         // 源寄存器1地址
+//     input wire [4:0] rs2_EX,         // 源寄存器2地址
+//     input wire [4:0] rd_EX,          // 目的寄存器地址
+//     input wire [6:0] opcode_EX,      // 操作码
+//     input wire [2:0] funct3_EX,      // 功能码 funct3
+//     input wire [6:0] funct7_EX,      // 功能码 funct7
+//     input wire [63:0] pc_EX,         // 从ID阶段传递的PC值
+
+//     input wire alu_a_sel, alu_b_sel, // ALU选择信号（来自ctrl）
+
+//     output reg [63:0] alu_result_EX, // ALU执行的结果
+//     output reg branch_taken_EX,      // 分支跳转信号
+//     output reg [63:0] branch_target_EX // 分支跳转目标地址
+// );
+
+
+
+// stage4
+// module pipeline_mem_stage (
+//     input wire clk,                     // 时钟信号
+//     input wire reset,                   // 复位信号，低电平有效
+
+//     // 上一阶段或id阶段的信号
+//     input wire [63:0] alu_result_EX,    // 从EX阶段传递的ALU计算结果，作为地址
+//     input wire [63:0] reg_data2_EX,     // 从EX阶段传递的源寄存器2的值 (用于存储数据)
+//     input wire [4:0] rd_EX,             // 从EX阶段传递的目的寄存器地址
+//     input wire [63:0] pc_MEM,           // 从EX阶段传递的PC值
+//     input wire [2:0] dm_rd_ctrl_id,     // 内存读控制信号
+//     input wire [1:0] dm_wr_ctrl_id,     // 内存写控制信号
+
+//     // 与内存接口的信号
+//     output reg [63:0] dm_addr,          // 传递给内存的地址信号
+//     output reg [63:0] dm_din,           // 传递给内存的数据（写入）
+//     input wire [63:0] dm_dout,          // 从内存读取的数据
+//     output reg [2:0] dm_rd_ctrl,        // 内存读控制信号
+//     output reg [1:0] dm_wr_ctrl,        // 内存写控制信号
+
+//     // 传递给下一个阶段的信号
+//     output reg [63:0] mem_data_MEM,     // 内存读取的数据
+//     output reg [63:0] alu_result_MEM,   // 直接传递的ALU结果（用于不需要内存操作的指令）
+//     output reg [4:0] rd_MEM,            // 传递给下一个阶段的目的寄存器地址
+//     output reg mem_read_done_MEM        // 内存读取完成信号
+// );
+
+
+
+// stage5
+// module pipeline_wb_stage (
+//     input wire clk,                    // 时钟信号
+//     input wire reset,                  // 复位信号，低电平有效
+//     input wire mem_to_reg_MEM,         // 控制信号，选择从内存还是ALU写回
+//     input wire [63:0] alu_result_MEM,  // 从MEM阶段传递的ALU结果
+//     input wire [63:0] mem_data_MEM,    // 从MEM阶段传递的内存数据
+//     input wire [4:0] rd_MEM,           // 从MEM阶段传递的目的寄存器地址
+//     input wire reg_write_MEM,          // 来自MEM阶段的写寄存器信号
+
+//     output reg [63:0] write_data_WB,   // 写回寄存器的数据
+//     output reg [4:0] rd_WB,            // 写回的目的寄存器地址
+//     output reg reg_write_WB            // 写回寄存器的控制信号
+// );
 
 endmodule

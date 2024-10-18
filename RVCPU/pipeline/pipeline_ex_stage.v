@@ -17,7 +17,9 @@ module pipeline_ex_stage (
     input wire [6:0] funct7_EX,      // 功能码 funct7
     input wire [63:0] pc_EX,         // 从ID阶段传递的PC值
 
-    input wire alu_a_sel, alu_b_sel, // alu选择信号（来自ctrl）
+    input wire alu_a_sel, alu_b_sel, // ALU选择信号（来自ctrl）
+
+    output reg pc_out,               // mem阶段输入pc
 
     output reg [63:0] alu_result_EX, // ALU执行的结果
     output reg branch_taken_EX,      // 分支跳转信号
@@ -30,9 +32,9 @@ module pipeline_ex_stage (
 
     wire BrE;  // 从 branch 模块输出的跳转条件
 
-    // ALU输入选择 (alu_x_sel信号选择alu的输入)
+    // ALU输入选择 (组合逻辑)
     always @(*) begin
-        alu_input1 = alu_a_sel ? reg_data1_EX : pc_EX ;
+        alu_input1 = alu_a_sel ? reg_data1_EX : pc_EX;
         alu_input2 = alu_b_sel ? imm_EX : reg_data2_EX;  // 对于I型指令，第二个操作数是立即数
     end
 
@@ -44,15 +46,20 @@ module pipeline_ex_stage (
         .BrE(BrE)
     );
 
-    // 分支跳转逻辑 (用 branch 模块替代)
-    always @(*) begin
-        branch_taken_EX = 1'b0;  // 默认不跳转
-        branch_target_EX = 64'b0;
+    // 分支跳转逻辑 (组合逻辑?)
+    always @(posedge clk or negedge reset) begin
+        if (!reset) begin
+            branch_taken_EX <= 1'b0;
+            branch_target_EX <= 64'b0;
+        end else begin
+            branch_taken_EX <= 1'b0;  // 默认不跳转
+            branch_target_EX <= 64'b0;
 
-        if (opcode_EX == 7'b1100011) begin  // 如果是分支指令
-            branch_taken_EX = BrE;  // 通过 branch 模块判断是否跳转
-            if (BrE) begin
-                branch_target_EX = pc_EX + imm_EX;  // 跳转目标地址
+            if (opcode_EX == 7'b1100011) begin  // 如果是分支指令
+                branch_taken_EX <= BrE;  // 通过 branch 模块判断是否跳转
+                if (BrE) begin
+                    branch_target_EX <= pc_EX + imm_EX;  // 跳转目标地址
+                end
             end
         end
     end
@@ -64,5 +71,17 @@ module pipeline_ex_stage (
         .func(alu_ctrl),
         .ALUout(alu_result_EX)
     );
+
+    // ALU计算结果的时序逻辑
+    always @(posedge clk or negedge reset) begin
+        if (!reset) begin
+            alu_result_EX <= 64'b0;
+            pc_out <= 0;
+        end else begin
+            // ALU结果在时钟上升沿更新
+            alu_result_EX <= alu0.ALUout;
+            pc_out <= pc_EX;
+        end
+    end
 
 endmodule
