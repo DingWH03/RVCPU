@@ -17,20 +17,30 @@ module pipeline_ex_stage (
     input wire [6:0] funct7_EX,      // 功能码 funct7
     input wire [63:0] pc_EX,         // 从ID阶段传递的PC值
 
+    input wire [3:0] alu_ctrl,       // 用于选择ALU操作的控制信号(来自ctrl)
     input wire alu_a_sel, alu_b_sel, // ALU选择信号（来自ctrl）
 
-    output reg pc_out,               // mem阶段输入pc
+    input wire [2:0] dm_rd_ctrl_ID,  // 接受id阶段数据存储器读取控制信号
+    input wire [1:0] dm_wr_ctrl_ID,  // 接受id阶段数据存储器写入控制信号
+
+    output reg [63:0] pc_out,               // mem阶段输入pc
 
     output reg [63:0] alu_result_EX, // ALU执行的结果
     output reg branch_taken_EX,      // 分支跳转信号
-    output reg [63:0] branch_target_EX // 分支跳转目标地址
+    output reg [63:0] branch_target_EX, // 分支跳转目标地址
+    output reg [2:0] dm_rd_ctrl_EX, // 转发读取控制信号
+    output reg [1:0] dm_wr_ctrl_EX, // 转发写入控制信号
+    output reg [63:0] reg_data2_MEM,// 转发到mem阶段
+    output reg [4:0] rd_MEM        // 转发到mem阶段
 );
 
-    reg [3:0] alu_ctrl;  // 用于选择ALU操作的控制信号
+    // reg [3:0] alu_ctrl;  // 用于选择ALU操作的控制信号
     reg [63:0] alu_input1; // ALU的第一个输入，可能是寄存器值或立即数
     reg [63:0] alu_input2;  // ALU的第二个输入，可能是寄存器值或立即数
 
     wire BrE;  // 从 branch 模块输出的跳转条件
+
+    wire [63:0] alu_result;
 
     // ALU输入选择 (组合逻辑)
     always @(*) begin
@@ -69,18 +79,26 @@ module pipeline_ex_stage (
         .SrcA(alu_input1),
         .SrcB(alu_input2),
         .func(alu_ctrl),
-        .ALUout(alu_result_EX)
+        .ALUout(alu_result)
     );
 
-    // ALU计算结果的时序逻辑
+    // ALU计算结果的时序逻辑 和其他信号
     always @(posedge clk or negedge reset) begin
         if (!reset) begin
             alu_result_EX <= 64'b0;
             pc_out <= 0;
+            dm_rd_ctrl_EX <= 0;
+            dm_wr_ctrl_EX <= 0;
+            reg_data2_MEM <= 0;
+            rd_MEM <= 0;
         end else begin
             // ALU结果在时钟上升沿更新
-            alu_result_EX <= alu0.ALUout;
+            alu_result_EX <= alu_result;
             pc_out <= pc_EX;
+            dm_rd_ctrl_EX <= dm_rd_ctrl_ID;
+            dm_wr_ctrl_EX <= dm_wr_ctrl_ID;
+            reg_data2_MEM <= reg_data2_EX;
+            rd_MEM <= rd_EX;
         end
     end
 

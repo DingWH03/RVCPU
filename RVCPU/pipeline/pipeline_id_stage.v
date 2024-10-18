@@ -21,7 +21,7 @@ module pipeline_id_stage (
     output reg [6:0] funct7_ID,      // 解码出的功能码 funct7
     output reg [63:0] imm_ID,        // 解码出的立即数
 
-    output reg pc_out,               // 输出到下一阶段的PC
+    output reg [63:0] pc_out,               // 输出到下一阶段的PC
 
     // 控制信号
     output reg rf_wr_en,             // 寄存器写使能信号
@@ -32,7 +32,7 @@ module pipeline_id_stage (
     output reg [2:0] BrType,         // 分支类型控制信号
     output reg [1:0] rf_wr_sel,      // 寄存器写回数据来源选择
 
-    // 与内存模块连接的控制信号
+    // 与内存模块连接的控制信号 (需要越过ex传递到mem阶段)
     output reg [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
     output reg [1:0] dm_wr_ctrl,     // 数据存储器写入控制信号
 
