@@ -11,7 +11,7 @@ wire [31:0] im_dout_mem; //
 wire [63:0] im_addr_mem; // mem到if阶段的连线
 
 wire [2:0] dm_rd_ctrl_mem; //
-wire [1:0] dm_wr_ctrl_mem; // mem连接到mem(访存阶段)的连线
+wire [2:0] dm_wr_ctrl_mem; // mem连接到mem(访存阶段)的连线
 wire [63:0] dm_addr_mem;   //
 wire [63:0] dm_dout_mem;   //
 wire [63:0] dm_din_mem;    //
@@ -19,7 +19,7 @@ wire [63:0] dm_din_mem;    //
 // ------------id阶段与寄存器堆的连接信号----------------------
 wire [63:0] data_reg_read_1, data_reg_read_2; // 寄存器堆返回的数据信号
 wire [2:0] dm_rd_ctrl; // 读取控制信号
-wire [1:0] dm_wr_ctrl; // 写入控制信号
+wire [2:0] dm_wr_ctrl; // 写入控制信号
 wire [4:0] addr_reg_read_1, addr_reg_read_2; // 连接源寄存器堆地址
 // --------------------------------------------------------
 
@@ -39,7 +39,7 @@ wire rf_wr_en_ID;             // 传递寄存器写使能信号
 
 // 传递内存相关的控制信号到后续阶段
 wire [2:0] dm_rd_ctrl_ID;  // 内存读控制信号
-wire [1:0] dm_wr_ctrl_ID;  // 内存写控制信号
+wire [2:0] dm_wr_ctrl_ID;  // 内存写控制信号
 // ---------------------------------------------------------
 
 // ------------ex阶段的输出，连接到mem阶段----------------------
@@ -49,7 +49,7 @@ wire [63:0] branch_target_EX; // 分支跳转目标地址
 
 // 将ID阶段传递来的控制信号继续传递给MEM阶段
 wire [2:0] dm_rd_ctrl_EX;  // 内存读控制信号
-wire [1:0] dm_wr_ctrl_EX;  // 内存写控制信号
+wire [2:0] dm_wr_ctrl_EX;  // 内存写控制信号
 
 wire rf_wr_en_EX;             // 传递寄存器写使能信号
 wire [1:0] rf_wr_sel_EX;      // 传递寄存器数据选择信号

@@ -23,7 +23,7 @@ module pipeline_ex_stage (
     input wire alu_a_sel, alu_b_sel, // ALU选择信号（来自ctrl）
 
     input wire [2:0] dm_rd_ctrl_ID,  // 接受id阶段数据存储器读取控制信号
-    input wire [1:0] dm_wr_ctrl_ID,  // 接受id阶段数据存储器写入控制信号
+    input wire [2:0] dm_wr_ctrl_ID,  // 接受id阶段数据存储器写入控制信号
 
     input wire do_jump,              // id阶段传来的jump信号
     input wire [2:0] BrType,         // id阶段传来的Brtype信号
@@ -36,7 +36,7 @@ module pipeline_ex_stage (
     output reg branch_taken_EX,      // 分支跳转信号
     output reg [63:0] branch_target_EX, // 分支跳转目标地址
     output reg [2:0] dm_rd_ctrl_EX, // 转发读取控制信号
-    output reg [1:0] dm_wr_ctrl_EX, // 转发写入控制信号
+    output reg [2:0] dm_wr_ctrl_EX, // 转发写入控制信号
     output reg [63:0] reg_data2_MEM,// 转发到mem阶段
     output reg [4:0] rd_MEM        // 转发到mem阶段
 );
@@ -67,7 +67,7 @@ module pipeline_ex_stage (
 
     // 分支跳转逻辑 (组合逻辑?)
     always @(posedge clk or negedge reset) begin
-        if (!reset) begin
+        if (reset) begin
             branch_taken_EX <= 1'b0;
             branch_target_EX <= 64'b0;
         end else begin
@@ -93,7 +93,7 @@ module pipeline_ex_stage (
 
     // ALU计算结果的时序逻辑 和其他信号
     always @(posedge clk or negedge reset) begin
-        if (!reset) begin
+        if (reset) begin
             alu_result_EX <= 64'b0;
             pc_out <= 0;
             dm_rd_ctrl_EX <= 0;

@@ -34,7 +34,7 @@ module pipeline_id_stage (
 
     // 与内存模块连接的控制信号 (需要越过ex传递到mem阶段)
     output reg [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
-    output reg [1:0] dm_wr_ctrl,     // 数据存储器写入控制信号
+    output reg [2:0] dm_wr_ctrl,     // 数据存储器写入控制信号
 
     output reg [4:0] addr_reg_read_1, addr_reg_read_2 // 连接源寄存器堆地址
 );
@@ -50,7 +50,8 @@ module pipeline_id_stage (
     wire rf_wr_en_wire, do_jump_wire, alu_a_sel_wire, alu_b_sel_wire;
     wire [3:0] alu_ctrl_wire;
     wire [2:0] BrType_wire, dm_rd_ctrl_wire;
-    wire [1:0] rf_wr_sel_wire, dm_wr_ctrl_wire;
+    wire [1:0] rf_wr_sel_wire;
+    wire [2:0] dm_wr_ctrl_wire;
 
     ctrl control_unit (
         .inst(instruction_ID),
@@ -70,7 +71,7 @@ module pipeline_id_stage (
 
     // 时钟上升沿的逻辑，用于锁存信号
     always @(posedge clk or negedge reset) begin
-        if (!reset) begin
+        if (reset) begin
             // 复位时清空寄存器
             opcode_ID      <= 7'b0;
             rd_ID          <= 5'b0;
@@ -89,7 +90,7 @@ module pipeline_id_stage (
             BrType         <= 3'b0;
             rf_wr_sel      <= 2'b0;
             dm_rd_ctrl     <= 3'b0;
-            dm_wr_ctrl     <= 2'b0;
+            dm_wr_ctrl     <= 3'b0;
             pc_out         <= 0;
         end else begin
             // 锁存解码得到的字段

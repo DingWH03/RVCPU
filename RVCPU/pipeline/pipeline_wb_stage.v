@@ -35,7 +35,7 @@ module pipeline_wb_stage (
 
     // 写回目的寄存器和控制信号
     always @(posedge clk or negedge reset) begin
-        if (!reset) begin
+        if (reset) begin
             rd_WB <= 5'b0;
             reg_write_WB <= 1'b0;
             write_data_WB <= 64'b0;

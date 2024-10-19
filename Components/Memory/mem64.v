@@ -1,9 +1,9 @@
 module mem(
     input           clk,
     input   [63:0]  im_addr,
-    output  [31:0]  im_dout,
+    output  reg [31:0]  im_dout,
     input   [2:0]   dm_rd_ctrl,
-    input   [1:0]   dm_wr_ctrl,
+    input   [2:0]   dm_wr_ctrl,
     input   [63:0]  dm_addr,
     input   [63:0]  dm_din,
     output reg  [63:0]  dm_dout
@@ -21,11 +21,26 @@ end
 
 initial
 begin
-    $readmemh("./meminit/inst.dat",mem);
+    $readmemb("./meminit/inst.dat",mem);
+    // 打印内存前10个地址的值
+    for(i=0; i<10; i=i+1) begin
+        $display("mem[%0d] = %h", i, mem[i]);
+    end
 end
 
 // 读取指令存储（IM）
-assign im_dout = {im_addr[31:14], im_addr[2:0]} == 0 ? mem[im_addr[13:3]] : 0;
+always @(*) begin
+    if (im_addr[63:14] == 0) begin
+        case (im_addr[2:0])
+            3'b000: im_dout = mem[im_addr[13:3]][31:0];   // 前半部分
+            3'b100: im_dout = mem[im_addr[13:3]][63:32];  // 后半部分
+            default: im_dout = 32'b0;                       // 其他情况返回0
+        endcase
+    end else begin
+        im_dout = 32'b0;  // 地址不在有效范围内，返回0
+    end
+end
+
 
 // 数据存储读取
 always@(*)
@@ -56,33 +71,37 @@ begin
 end
 
 // 写使能控制
-always@(*)
+always @(*)
 begin
-    if(dm_wr_ctrl == 2'b11)
+    if (dm_wr_ctrl == 3'b011)  // 对应于 is_sw
         byte_en = 8'b11111111;
-    else if(dm_wr_ctrl == 2'b10)
+    else if (dm_wr_ctrl == 3'b010)  // 对应于 is_sh
     begin
-        if(dm_addr[2] == 1'b1) 
+        if (dm_addr[2] == 1'b1) 
             byte_en = 8'b11110000;
         else
             byte_en = 8'b00001111;
     end
-    else if(dm_wr_ctrl == 2'b01)
+    else if (dm_wr_ctrl == 3'b001)  // 对应于 is_sb
     begin
-        case(dm_addr[2:0])
-        3'b000:  byte_en = 8'b00000001;
-        3'b001:  byte_en = 8'b00000010;
-        3'b010:  byte_en = 8'b00000100;
-        3'b011:  byte_en = 8'b00001000;
-        3'b100:  byte_en = 8'b00010000;
-        3'b101:  byte_en = 8'b00100000;
-        3'b110:  byte_en = 8'b01000000;
-        3'b111:  byte_en = 8'b10000000;
+        case (dm_addr[2:0])
+        3'b000: byte_en = 8'b00000001;
+        3'b001: byte_en = 8'b00000010;
+        3'b010: byte_en = 8'b00000100;
+        3'b011: byte_en = 8'b00001000;
+        3'b100: byte_en = 8'b00010000;
+        3'b101: byte_en = 8'b00100000;
+        3'b110: byte_en = 8'b01000000;
+        3'b111: byte_en = 8'b10000000;
         endcase
     end
+    else if (dm_wr_ctrl == 3'b100)  // 对应于 is_sd
+        byte_en = 8'b11111111;  // 假设 is_sd 时写入整个字节
     else
-        byte_en = 8'b00000000;
+        byte_en = 8'b00000000;  // 默认值
 end
+
+
 
 // 数据存储写入
 always@(posedge clk)

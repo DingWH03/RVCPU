@@ -8,7 +8,7 @@ output            alu_a_sel,
 output            alu_b_sel,
 output reg    [3:0]   alu_ctrl,
 output reg    [2:0]   dm_rd_ctrl,
-output reg    [1:0]   dm_wr_ctrl,
+output reg    [2:0]   dm_wr_ctrl,
 input   wire    [6:0]   opcode,
 input   wire    [2:0]   funct3,
 input   wire    [6:0]   funct7
@@ -188,15 +188,15 @@ begin
     else dm_rd_ctrl = 3'b000;
 end
 
-
-//[1:0]dm_wr_ctrl
-always@(*)
+// [2:0] dm_wr_ctrl
+always @(*)
 begin
-    if (is_sb) dm_wr_ctrl = 2'b01;
-    else if (is_sh) dm_wr_ctrl = 2'b10;
-    else if (is_sw) dm_wr_ctrl = 2'b11;
-    else if (is_sd) dm_wr_ctrl = 2'b00;  // 新增64位存储控制
-    else dm_wr_ctrl = 2'b00;
+    if (is_sb) dm_wr_ctrl = 3'b001;
+    else if (is_sh) dm_wr_ctrl = 3'b010;
+    else if (is_sw) dm_wr_ctrl = 3'b011;
+    else if (is_sd) dm_wr_ctrl = 3'b100;  // 新增64位存储控制
+    else dm_wr_ctrl = 3'b000;  // 默认值
 end
+
 
 endmodule

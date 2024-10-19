@@ -14,33 +14,33 @@ module pipeline_if_stage (
     output wire [63:0] im_addr,  // 连接到顶层模块中的指令存储器地址
     
     output reg [63:0] pc_IF,     // 当前PC值
-    output wire [31:0] instruction_IF  // 取到的指令
+    output reg [31:0] instruction_IF  // 取到的指令
 );
 
-    // 内部信号
-    wire [63:0] pc_plus4_IF;     // 计算出的下一个PC值
-    reg [63:0] pc_next;          // 下一个PC的值
+    wire [63:0] PC;
 
-    // PC + 4 计算 (组合逻辑)
-    assign pc_plus4_IF = pc_IF + 64'h4;
+    // 程序计数器
+    PC pc0 (
+        .clk(clk),
+        .rst(reset),
+        .JUMP(branch_taken),
+        .JUMP_PC(branch_target),
+        .stall(stall),
+        .pc(PC)
+    );
 
-    // PC更新逻辑 (时序逻辑)
+    // 指令存储器地址
+    assign im_addr = PC; // 假设指令存储器以4字节对齐，取高位地址
+
+    // 在时钟上升沿或复位信号有效时，更新指令和
     always @(posedge clk or negedge reset) begin
-        if (!reset) begin
-            pc_IF <= 64'h0;  // 复位时PC初始化为0
+        if (reset) begin
+            instruction_IF <= 32'b0;    // 复位时指令为0
+            pc_IF <= 0;
         end else if (!stall) begin
-            // 判断是否是分支跳转
-            if (branch_taken)
-                pc_IF <= branch_target;  // 如果分支跳转，则PC更新为目标地址
-            else
-                pc_IF <= pc_plus4_IF;    // 否则顺序执行，PC更新为PC+4
+            instruction_IF <= im_dout;  // 从指令存储器中读取指令
+            pc_IF <= PC;
         end
     end
-
-    // 从外部指令存储器获取指令
-    assign instruction_IF = im_dout;
-
-    // 将当前PC作为指令存储器地址
-    assign im_addr = pc_IF;
 
 endmodule
