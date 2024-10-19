@@ -14,6 +14,8 @@ module pipeline_mem_stage (
     input wire [63:0] pc_MEM,           // 从EX阶段传递的PC值
     input wire [2:0] dm_rd_ctrl_id,     // 内存读控制信号
     input wire [1:0] dm_wr_ctrl_id,     // 内存写控制信号
+    input wire rf_wr_en_EX,             // id阶段传来的寄存器写使能信号
+    input wire [1:0] rf_wr_sel_EX,         // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
 
     // 与内存接口的信号
     output reg [63:0] dm_addr,          // 传递给内存的地址信号
@@ -24,6 +26,8 @@ module pipeline_mem_stage (
 
     // 传递给下一个阶段的信号
     output reg [63:0] pc_out,           // 下一阶段的输入pc
+    output reg [1:0] rf_wr_sel_MEM,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
+    output reg rf_wr_en_MEM,            // 传入到wb阶段的寄存器写使能信号
     output reg [63:0] mem_data_MEM,     // 内存读取的数据
     output reg [63:0] alu_result_MEM,   // 直接传递的ALU结果（用于不需要内存操作的指令）
     output reg [4:0] rd_MEM,            // 传递给下一个阶段的目的寄存器地址
@@ -44,6 +48,7 @@ module pipeline_mem_stage (
             dm_rd_ctrl <= 3'b0;
             dm_wr_ctrl <= 2'b0;
             pc_out <= 0;
+            rf_wr_en_MEM <= 0;
         end else begin
             // 传递给下一个阶段的ALU结果 (对于不需要访问内存的指令)
             alu_result_MEM <= alu_result_EX;
@@ -61,6 +66,7 @@ module pipeline_mem_stage (
             dm_rd_ctrl <= dm_rd_ctrl_id;      // 直接传递内存读控制信号
             dm_wr_ctrl <= dm_wr_ctrl_id;      // 直接传递内存写控制信号
             pc_out <= pc_MEM;
+            rf_wr_en_MEM <= rf_wr_en_EX;
         end
     end
 
