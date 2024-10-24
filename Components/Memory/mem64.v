@@ -21,7 +21,7 @@ end
 
 initial
 begin
-    $readmemb("./meminit/inst.dat",mem);
+    $readmemb("../meminit/inst.dat",mem);
     // 打印内存前10个地址的值
     for(i=0; i<10; i=i+1) begin
         $display("mem[%0d] = %h", i, mem[i]);

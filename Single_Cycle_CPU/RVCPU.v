@@ -6,40 +6,40 @@ input rst
 wire    [31:0]  inst;
 
 wire    [1:0]   rf_wr_sel;
-reg     [31:0]  rf_wd;  
+reg     [63:0]  rf_wd;  
 wire            rf_wr_en;
-wire    [31:0]  rf_rd1,rf_rd2;
+wire    [63:0]  rf_rd1,rf_rd2;
   
 wire [63:0] pc;
 wire [63:0] pc_plus4;
 wire do_jump;
 wire JUMP;
   
-wire    [31:0]  imm_out;
+wire    [63:0]  imm_out;
   
 wire    [2:0]   comp_ctrl;
 wire		BrE;
 
 wire            alu_a_sel;
 wire            alu_b_sel;
-wire    [31:0]  alu_a,alu_b,alu_out; 
+wire    [63:0]  alu_a,alu_b,alu_out; 
 wire    [3:0]   alu_ctrl;
   
 wire    [2:0]   dm_rd_ctrl;
-wire    [1:0]   dm_wr_ctrl;
-wire    [31:0]  dm_dout;
+wire    [2:0]   dm_wr_ctrl;
+wire    [63:0]  dm_dout;
   
 always@(*)
 begin
     case(rf_wr_sel)
-    2'b00:  rf_wd = 32'h0;
+    2'b00:  rf_wd = 64'h0;
     2'b01:  rf_wd = pc_plus4;
     2'b10:  rf_wd = alu_out;
     2'b11:  rf_wd = dm_dout;
-    default:rf_wd = 32'h0;
+    default:rf_wd = 64'h0;
     endcase
 end
-assign		pc_plus4 = pc + 32'h4;
+assign		pc_plus4 = pc + 64'h4;
 assign		JUMP = BrE || do_jump;
 assign      alu_a = alu_a_sel ? rf_rd1 : pc ;
 assign      alu_b = alu_b_sel ? imm_out : rf_rd2 ;
@@ -59,6 +59,7 @@ PC	pc0(
     .rst		(rst),
     .JUMP		(JUMP),
 	.JUMP_PC    (pc+imm_out),
+	.stall		(1'b0),
 	.pc         (pc)
 );
 imm	imm0(
@@ -79,7 +80,7 @@ ALU alu0(
 );
 mem mem0(
 	.clk        (clk),
-	.im_addr    (pc[31:0]),
+	.im_addr    (pc),
 	.im_dout    (inst),
 	.dm_rd_ctrl (dm_rd_ctrl),
 	.dm_wr_ctrl (dm_wr_ctrl),

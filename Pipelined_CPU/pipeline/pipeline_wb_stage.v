@@ -25,11 +25,11 @@ module pipeline_wb_stage (
     always@(*)
     begin
     case(rf_wr_sel)
-        2'b00:  write_data_WB = 32'h0;
+        2'b00:  write_data_WB = 64'h0;
         2'b01:  write_data_WB = pc_plus4;
         2'b10:  write_data_WB = alu_result_MEM;
         2'b11:  write_data_WB = mem_data_MEM;
-    default:write_data_WB = 32'h0;
+    default:write_data_WB = 64'h0;
     endcase
     end
 

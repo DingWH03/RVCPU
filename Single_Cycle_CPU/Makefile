@@ -5,7 +5,7 @@ IVERILOG = iverilog
 VVP = vvp
 
 # Directories
-SRC_DIR = .
+SRC_DIR = ..
 COMPONENTS_DIR = $(SRC_DIR)/Components
 ALU_DIR = $(COMPONENTS_DIR)/ALU
 BRANCH_DIR = $(COMPONENTS_DIR)/Branch
@@ -14,8 +14,7 @@ IMM_DIR = $(COMPONENTS_DIR)/Imm
 MEMORY_DIR = $(COMPONENTS_DIR)/Memory
 PC_DIR = $(COMPONENTS_DIR)/PC
 REGFILE_DIR = $(COMPONENTS_DIR)/RegisterFile
-RVCU_DIR = $(SRC_DIR)/RVCPU
-PIPELINE_DIR = $(RVCU_DIR)/pipeline
+RVCU_DIR = $(SRC_DIR)/Single_Cycle_CPU
 OUTPUT_DIR = output
 
 # Source files
@@ -26,12 +25,7 @@ IMM_SRC = $(IMM_DIR)/imm64.v
 MEMORY_SRC = $(MEMORY_DIR)/mem64.v
 PC_SRC = $(PC_DIR)/PC.v
 REGFILE_SRC = $(REGFILE_DIR)/regfileI64.v 
-PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_if_stage.v \
-				$(PIPELINE_DIR)/pipeline_id_stage.v \
-				$(PIPELINE_DIR)/pipeline_ex_stage.v \
-				$(PIPELINE_DIR)/pipeline_mem_stage.v \
-				$(PIPELINE_DIR)/pipeline_wb_stage.v 
-RVCU_SRC = $(RVCU_DIR)/RV64CPU.v \
+RVCU_SRC = $(RVCU_DIR)/RVCPU.v \
 			$(RVCU_DIR)/RVCPU_tb.v
 
 # Output files
@@ -46,7 +40,7 @@ $(OUTPUT_DIR):
 	mkdir -p $(OUTPUT_DIR)
 
 # Compile the design
-$(OUTPUT): $(OUTPUT_DIR) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(MEMORY_SRC) $(PC_SRC) $(REGFILE_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
+$(OUTPUT): $(OUTPUT_DIR) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(MEMORY_SRC) $(PC_SRC) $(REGFILE_SRC) $(RVCU_SRC)
 	$(IVERILOG) -o $(OUTPUT) $^
 
 # Run the simulation
