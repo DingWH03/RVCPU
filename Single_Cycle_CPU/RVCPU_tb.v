@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns / 1ns
 
 module RVCPU_tb;
 
@@ -17,7 +17,7 @@ module RVCPU_tb;
 	.dm_addr    (dm_addr),
 	.dm_din     (dm_din),
 	.dm_dout    (dm_dout)
-);
+    );
 
     // 实例化 RVCPU 模块
     RVCPU rvcpu (

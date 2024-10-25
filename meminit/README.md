@@ -9,4 +9,7 @@
 
 ADDI x1, x0, 7
 ADDI x2, x0, 2
+nop
+... (空指令因为还未实现数据冒险)
+nop
 ADD x3, x1, x2

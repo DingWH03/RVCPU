@@ -1,20 +1,18 @@
 module RVCPU(
 input clk,
-input rst
+input rst,
+output [63:0] im_addr_mem0,
+input [31:0] im_dout_mem0,
+output [2:0] dm_rd_ctrl_mem,
+output [2:0] dm_wr_ctrl_mem,
+output [63:0] dm_addr_mem,
+output [63:0] dm_din_mem,
+input [63:0] dm_dout_mem
 );
 
 wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递
 
 wire [31:0] instruction_IF; // if阶段取出的指令连接到id阶段
-
-wire [31:0] im_dout_mem; //
-wire [63:0] im_addr_mem; // mem到if阶段的连线
-
-wire [2:0] dm_rd_ctrl_mem; //
-wire [2:0] dm_wr_ctrl_mem; // mem连接到mem(访存阶段)的连线
-wire [63:0] dm_addr_mem;   //
-wire [63:0] dm_dout_mem;   //
-wire [63:0] dm_din_mem;    //
 
 // ------------id阶段与寄存器堆的连接信号----------------------
 wire [63:0] data_reg_read_1, data_reg_read_2; // 寄存器堆返回的数据信号
@@ -96,18 +94,6 @@ wire rf_wr_en_MEM;          // 从id阶段传递过来的寄存器写使能信�
 wire [1:0] rf_wr_sel_MEM;   // 从id阶段传递过来的寄存器写入数据选择信号
 // --------------------------------------------------------------
 
-// 顶层模块初始化mem
-mem mem0(
-	.clk        (clk),
-	.im_addr    (im_addr_mem),
-	.im_dout    (im_dout_mem),
-	.dm_rd_ctrl (dm_rd_ctrl_mem),
-	.dm_wr_ctrl (dm_wr_ctrl_mem),
-	.dm_addr    (dm_addr_mem),
-	.dm_din     (dm_din_mem),
-	.dm_dout    (dm_dout_mem)
-);
-
 // 顶层模块初始化寄存器堆
 reg_file reg_file0(
 	.clk        (clk),
@@ -141,8 +127,8 @@ pipeline_if_stage stage1(
     .stall(1'b0),
     .branch_taken(branch_taken),
     .branch_target(branch_target),
-    .im_dout(im_dout_mem),
-    .im_addr(im_addr_mem),
+    .im_dout(im_dout_mem0),
+    .im_addr(im_addr_mem0),
     .pc_IF(pc_if_to_id), // 传入下一周期的PC值(等于当前阶段指令位置)
     .instruction_IF(instruction_IF)
 );
