@@ -22,7 +22,7 @@ module pipeline_wb_stage (
     assign pc_plus4 = pc_in + 4;
 
     // 写回数据选择逻辑
-    always@(*)
+    always @(posedge clk or negedge reset)
     begin
     case(rf_wr_sel)
         2'b00:  write_data_WB = 64'h0;

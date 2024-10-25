@@ -49,6 +49,7 @@ module pipeline_mem_stage (
             dm_wr_ctrl <= 3'b0;
             pc_out <= 0;
             rf_wr_en_MEM <= 0;
+            rf_wr_sel_MEM <= 0;
         end else begin
             // 传递给下一个阶段的ALU结果 (对于不需要访问内存的指令)
             alu_result_MEM <= alu_result_EX;
@@ -67,6 +68,7 @@ module pipeline_mem_stage (
             dm_wr_ctrl <= dm_wr_ctrl_id;      // 直接传递内存写控制信号
             pc_out <= pc_MEM;
             rf_wr_en_MEM <= rf_wr_en_EX;
+            rf_wr_sel_MEM <= rf_wr_sel_EX;
         end
     end
 
