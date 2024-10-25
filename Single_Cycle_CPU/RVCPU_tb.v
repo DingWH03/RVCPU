@@ -4,11 +4,32 @@ module RVCPU_tb;
 
     reg clk;           // 时钟信号
     reg rst;           // 复位信号
+    wire [31:0] im_dout;
+    wire [63:0] im_addr, dm_addr, dm_din, dm_dout;
+    wire [2:0] dm_rd_ctrl, dm_wr_ctrl;
+
+    mem mem0(
+	.clk        (clk),
+	.im_addr    (im_addr),
+	.im_dout    (im_dout),
+	.dm_rd_ctrl (dm_rd_ctrl),
+	.dm_wr_ctrl (dm_wr_ctrl),
+	.dm_addr    (dm_addr),
+	.dm_din     (dm_din),
+	.dm_dout    (dm_dout)
+);
 
     // 实例化 RVCPU 模块
     RVCPU rvcpu (
         .clk(clk),
-        .rst(rst)
+        .rst(rst),
+        .im_addr(im_addr),
+        .im_dout(im_dout),
+        .dm_rd_ctrl(dm_rd_ctrl),
+        .dm_wr_ctrl(dm_wr_ctrl),
+        .dm_addr(dm_addr),
+        .dm_din(dm_din),
+        .dm_dout(dm_dout)
     );
 
     // 时钟生成

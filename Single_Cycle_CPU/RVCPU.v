@@ -1,6 +1,13 @@
 module RVCPU(
 input clk,
-input rst
+input rst,
+output [63:0] im_addr,
+input [31:0] im_dout,
+output [2:0] dm_rd_ctrl,
+output [2:0] dm_wr_ctrl,
+output [63:0] dm_addr,
+output [63:0] dm_din,
+input [63:0] dm_dout
 );
 
 wire    [31:0]  inst;
@@ -25,9 +32,9 @@ wire            alu_b_sel;
 wire    [63:0]  alu_a,alu_b,alu_out; 
 wire    [3:0]   alu_ctrl;
   
-wire    [2:0]   dm_rd_ctrl;
-wire    [2:0]   dm_wr_ctrl;
-wire    [63:0]  dm_dout;
+// wire    [2:0]   dm_rd_ctrl;
+// wire    [2:0]   dm_wr_ctrl;
+// wire    [63:0]  dm_dout;
   
 always@(*)
 begin
@@ -43,6 +50,12 @@ assign		pc_plus4 = pc + 64'h4;
 assign		JUMP = BrE || do_jump;
 assign      alu_a = alu_a_sel ? rf_rd1 : pc ;
 assign      alu_b = alu_b_sel ? imm_out : rf_rd2 ;
+
+assign im_addr = pc;
+assign inst = im_dout;
+assign dm_addr = alu_out;
+assign dm_din = rf_rd2;
+
 
 reg_file reg_file0(
 	.clk        (clk),
@@ -78,16 +91,7 @@ ALU alu0(
 	.func   	(alu_ctrl),
 	.ALUout    	(alu_out)
 );
-mem mem0(
-	.clk        (clk),
-	.im_addr    (pc),
-	.im_dout    (inst),
-	.dm_rd_ctrl (dm_rd_ctrl),
-	.dm_wr_ctrl (dm_wr_ctrl),
-	.dm_addr    (alu_out),
-	.dm_din     (rf_rd2),
-	.dm_dout    (dm_dout)
-);
+
 ctrl ctrl0(
 	.inst       (inst),
 	.rf_wr_en   (rf_wr_en),
@@ -98,7 +102,10 @@ ctrl ctrl0(
 	.alu_b_sel  (alu_b_sel),
 	.alu_ctrl   (alu_ctrl),
 	.dm_rd_ctrl (dm_rd_ctrl),
-	.dm_wr_ctrl (dm_wr_ctrl)
+	.dm_wr_ctrl (dm_wr_ctrl),
+	.opcode(inst[6:0]),
+	.funct7(inst[31:25]),
+	.funct3(inst[14:12])
 );
 
 endmodule
