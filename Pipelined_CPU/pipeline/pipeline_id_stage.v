@@ -6,7 +6,7 @@
 module pipeline_id_stage (
     input wire clk,                   // 时钟信号
     input wire reset,                 // 复位信号，低电平有效
-    input wire [31:0] instruction_ID, // 从IF阶段传来的指令
+    input wire [31:0] instruction_IF, // 从IF阶段传来的指令
     input wire [63:0] pc_ID,          // 从IF阶段传来的PC值
 
     input wire [63:0] data_reg_read_1, data_reg_read_2, // 从寄存器堆读取的数据
@@ -38,6 +38,10 @@ module pipeline_id_stage (
 
     output reg [4:0] addr_reg_read_1, addr_reg_read_2 // 连接源寄存器堆地址
 );
+
+    reg [31:0] instruction_ID;
+
+    
 
     // 实例化立即数解码模块
     wire [63:0] imm_wire;
@@ -92,18 +96,20 @@ module pipeline_id_stage (
             dm_rd_ctrl     <= 3'b0;
             dm_wr_ctrl     <= 3'b0;
             pc_out         <= 0;
+            instruction_ID <= 0;
         end else begin
             // 锁存解码得到的字段
-            opcode_ID      <= instruction_ID[6:0];    // 操作码
+            opcode_ID      <= instruction_IF[6:0];    // 操作码
             rd_ID          <= instruction_ID[11:7];   // 目的寄存器
-            funct3_ID      <= instruction_ID[14:12];  // 功能码 funct3
-            rs1_ID         <= instruction_ID[19:15];  // 源寄存器1
-            rs2_ID         <= instruction_ID[24:20];  // 源寄存器2
-            funct7_ID      <= instruction_ID[31:25];  // 功能码 funct7
+            funct3_ID      <= instruction_IF[14:12];  // 功能码 funct3
+            rs1_ID         <= instruction_IF[19:15];  // 源寄存器1
+            rs2_ID         <= instruction_IF[24:20];  // 源寄存器2
+            funct7_ID      <= instruction_IF[31:25];  // 功能码 funct7
 
             // 锁存寄存器地址和立即数
-            addr_reg_read_1 <= instruction_ID[19:15];  // rs1地址
-            addr_reg_read_2 <= instruction_ID[24:20];  // rs2地址
+            addr_reg_read_1 <= instruction_IF[19:15];  // rs1地址
+            addr_reg_read_2 <= instruction_IF[24:20];  // rs2地址
+            instruction_ID  <= instruction_IF;
             imm_ID         <= imm_wire;                // 立即数
 
             // 锁存寄存器文件数据

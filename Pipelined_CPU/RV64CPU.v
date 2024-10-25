@@ -189,7 +189,7 @@ pipeline_if_stage stage1(
 pipeline_id_stage stage2(
     .clk(clk),
     .reset(rst),
-    .instruction_ID(instruction_IF),
+    .instruction_IF(instruction_IF),
     .pc_ID(pc_if_to_id),
     .data_reg_read_1(data_reg_read_1),
     .data_reg_read_2(data_reg_read_2),

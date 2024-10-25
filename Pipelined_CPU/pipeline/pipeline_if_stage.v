@@ -33,7 +33,7 @@ module pipeline_if_stage (
     assign im_addr = PC; // 假设指令存储器以4字节对齐，取高位地址
 
     // 在时钟上升沿或复位信号有效时，更新指令和
-    always @(posedge clk or negedge reset) begin
+    always @(posedge clk) begin
         if (reset) begin
             instruction_IF <= 32'b0;    // 复位时指令为0
             pc_IF <= 0;
