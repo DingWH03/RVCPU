@@ -24,15 +24,13 @@ wire [4:0] addr_reg_read_1, addr_reg_read_2; // 连接源寄存器堆地址
 // --------------------------------------------------------
 
 // ------------id阶段的输出，连接到ex阶段----------------------
-wire [6:0] opcode_ID; 
-wire [2:0] funct3_ID;  
-wire [6:0] funct7_ID;  
+// wire [6:0] opcode_ID; 
+// wire [2:0] funct3_ID;  
+// wire [6:0] funct7_ID;  
 wire [63:0] imm_ID;   
 
 wire [63:0] reg_data1_ID;  // 源操作数1
 wire [63:0] reg_data2_ID;  // 源操作数2
-wire [4:0] rs1_ID;         // 源寄存器1地址
-wire [4:0] rs2_ID;         // 源寄存器2地址
 wire [4:0] rd_ID;          // 目的寄存器地址
 wire [1:0] rf_wr_sel;      // 寄存器写回数据选择
 wire rf_wr_en_ID;             // 传递寄存器写使能信号
@@ -86,6 +84,7 @@ wire alu_a_sel_ID;
 wire alu_b_sel_ID;
 wire [3:0] alu_ctrl_ID;
 wire do_jump;
+wire is_branch;
 wire [2:0] BrType;
 // -------------------------------------------------------------
 
@@ -190,21 +189,17 @@ pipeline_id_stage stage2(
     .clk(clk),
     .reset(rst),
     .instruction_IF(instruction_IF),
-    .pc_ID(pc_if_to_id),
+    .pc_IF(pc_if_to_id),
     .data_reg_read_1(data_reg_read_1),
     .data_reg_read_2(data_reg_read_2),
     .reg_data1_ID(reg_data1_ID),
     .reg_data2_ID(reg_data2_ID),
-    .rs1_ID(rs1_ID),
-    .rs2_ID(rs2_ID),
     .rd_ID(rd_ID),
-    .opcode_ID(opcode_ID),
-    .funct3_ID(funct3_ID),
-    .funct7_ID(funct7_ID),
     .imm_ID(imm_ID),
-    .pc_out(pc_id_to_ex),
+    .pc_ID(pc_id_to_ex),
     .rf_wr_en(rf_wr_en_ID), // 寄存器写使能信号，需要传递至wb阶段
     .do_jump(do_jump), // jump控制信号，接入ex阶段（BrE || do_jump）
+    .is_branch(is_branch),
     .alu_a_sel(alu_a_sel_ID),
     .alu_b_sel(alu_b_sel_ID),
     .alu_ctrl(alu_ctrl_ID),
@@ -262,12 +257,8 @@ pipeline_ex_stage stage3(
     .reg_data1_EX(reg_data1_ID),
     .reg_data2_EX(reg_data2_ID),
     .imm_EX(imm_ID),
-    .rs1_EX(rs1_ID),
-    .rs2_EX(rs2_ID),
     .rd_EX(rd_ID),
-    .opcode_EX(opcode_ID),
-    .funct3_EX(funct3_ID),
-    .funct7_EX(funct7_ID),
+    // .opcode_EX(opcode_ID),
     .pc_EX(pc_id_to_ex),
     .rf_wr_en_ID(rf_wr_en_ID),             // 传递寄存器写使能信号
     .rf_wr_sel_ID(rf_wr_sel),
@@ -277,8 +268,9 @@ pipeline_ex_stage stage3(
     .dm_rd_ctrl_ID(dm_rd_ctrl_ID), // 转发id信号
     .dm_wr_ctrl_ID(dm_wr_ctrl_ID), // 转发id信号
     .do_jump(do_jump),
+    .is_branch(is_branch),
     .BrType(BrType),
-    .pc_out(pc_ex_to_mem),
+    .pc_MEM(pc_ex_to_mem),
     .rf_wr_en_EX(rf_wr_en_EX),             // 传递寄存器写使能信号
     .rf_wr_sel_EX(rf_wr_sel_EX),
     .alu_result_EX(alu_result_EX),
@@ -341,7 +333,7 @@ pipeline_mem_stage stage4(
     .dm_rd_ctrl(dm_rd_ctrl_mem),
     .dm_wr_ctrl(dm_wr_ctrl_mem),
     .rf_wr_sel_MEM(rf_wr_sel_MEM),
-    .pc_out(pc_mem_to_wb),
+    .pc_WB(pc_mem_to_wb),
     .rf_wr_en_MEM(rf_wr_en_MEM),
     .mem_data_MEM(mem_data_MEM),
     .alu_result_MEM(alu_result_MEM),
@@ -373,7 +365,7 @@ pipeline_wb_stage stage5(
     .mem_data_MEM(mem_data_MEM),
     .rd_MEM(rd_MEM),
     .reg_write_MEM(rf_wr_en_MEM),
-    .pc_in(pc_mem_to_wb),
+    .pc_WB(pc_mem_to_wb),
     .write_data_WB(write_data_WB),
     .rd_WB(rd_WB),
     .reg_write_WB(reg_write_WB)

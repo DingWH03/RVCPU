@@ -20,6 +20,7 @@ wire    [63:0]  rf_rd1,rf_rd2;
 wire [63:0] pc;
 wire [63:0] pc_plus4;
 wire do_jump;
+wire is_branch;
 wire JUMP;
   
 wire    [63:0]  imm_out;
@@ -47,7 +48,7 @@ begin
     endcase
 end
 assign		pc_plus4 = pc + 64'h4;
-assign		JUMP = BrE || do_jump;
+assign		JUMP = (is_branch && BrE) || do_jump;
 assign      alu_a = alu_a_sel ? rf_rd1 : pc ;
 assign      alu_b = alu_b_sel ? imm_out : rf_rd2 ;
 
@@ -97,6 +98,7 @@ ctrl ctrl0(
 	.rf_wr_en   (rf_wr_en),
 	.rf_wr_sel  (rf_wr_sel),
 	.do_jump    (do_jump),
+	.is_branch(is_branch),
 	.BrType		(comp_ctrl),
 	.alu_a_sel  (alu_a_sel),
 	.alu_b_sel  (alu_b_sel),

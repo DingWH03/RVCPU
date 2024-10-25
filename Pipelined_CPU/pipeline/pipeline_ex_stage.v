@@ -9,12 +9,7 @@ module pipeline_ex_stage (
     input wire [63:0] reg_data1_EX,  // 从ID阶段传递的源操作数1
     input wire [63:0] reg_data2_EX,  // 从ID阶段传递的源操作数2
     input wire [63:0] imm_EX,        // 从ID阶段传递的立即数
-    input wire [4:0] rs1_EX,         // 源寄存器1地址
-    input wire [4:0] rs2_EX,         // 源寄存器2地址
     input wire [4:0] rd_EX,          // 目的寄存器地址
-    input wire [6:0] opcode_EX,      // 操作码
-    input wire [2:0] funct3_EX,      // 功能码 funct3
-    input wire [6:0] funct7_EX,      // 功能码 funct7
     input wire [63:0] pc_EX,         // 从ID阶段传递的PC值
     input wire rf_wr_en_ID,          // 从ID阶段传递的寄存器写使能信号，需要传递到wb阶段
     input wire [1:0] rf_wr_sel_ID,         // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
@@ -26,9 +21,10 @@ module pipeline_ex_stage (
     input wire [2:0] dm_wr_ctrl_ID,  // 接受id阶段数据存储器写入控制信号
 
     input wire do_jump,              // id阶段传来的jump信号
+    input wire is_branch,            // id阶段传来的branch信号
     input wire [2:0] BrType,         // id阶段传来的Brtype信号
 
-    output reg [63:0] pc_out,               // mem阶段输入pc
+    output reg [63:0] pc_MEM,               // mem阶段输入pc
     output reg rf_wr_en_EX,          // 从ID阶段传递的寄存器写使能信号，需要传递到wb阶段
     output reg [1:0] rf_wr_sel_EX,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
 
@@ -74,7 +70,7 @@ module pipeline_ex_stage (
             branch_taken_EX <= 1'b0;  // 默认不跳转
             branch_target_EX <= 64'b0;
 
-            if (opcode_EX == 7'b1100011) begin  // 如果是分支指令
+            if (is_branch) begin  // 如果是分支指令
                 branch_taken_EX <= JUMP;  // 通过 branch 模块判断是否跳转
                 if (JUMP) begin
                     branch_target_EX <= pc_EX + imm_EX;  // 跳转目标地址
@@ -95,7 +91,7 @@ module pipeline_ex_stage (
     always @(posedge clk or negedge reset) begin
         if (reset) begin
             alu_result_EX <= 64'b0;
-            pc_out <= 0;
+            pc_MEM <= 0;
             dm_rd_ctrl_EX <= 0;
             dm_wr_ctrl_EX <= 0;
             reg_data2_MEM <= 0;
@@ -105,7 +101,7 @@ module pipeline_ex_stage (
         end else begin
             // ALU结果在时钟上升沿更新
             alu_result_EX <= alu_result;
-            pc_out <= pc_EX;
+            pc_MEM <= pc_EX;
             dm_rd_ctrl_EX <= dm_rd_ctrl_ID;
             dm_wr_ctrl_EX <= dm_wr_ctrl_ID;
             reg_data2_MEM <= reg_data2_EX;

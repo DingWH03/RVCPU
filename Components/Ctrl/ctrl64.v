@@ -3,6 +3,7 @@ input     [31:0]  inst,
 output            rf_wr_en,
 output reg    [1:0]   rf_wr_sel,
 output            do_jump,
+output            is_branch,
 output reg    [2:0]   BrType,
 output            alu_a_sel,
 output            alu_b_sel,
@@ -138,6 +139,9 @@ end
   
 //do_jump
 assign do_jump      =  is_jalr | is_jal | is_b_type ;
+
+// is_branch
+assign is_branch = (inst[6:0] == 7'b1100011); // 仅当opcode表示分支指令时is_branch为1
   
 //[2:0]BrType
 always@(*)

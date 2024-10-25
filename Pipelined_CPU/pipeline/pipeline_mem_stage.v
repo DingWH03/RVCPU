@@ -25,7 +25,7 @@ module pipeline_mem_stage (
     output reg [2:0] dm_wr_ctrl,        // 内存写控制信号
 
     // 传递给下一个阶段的信号
-    output reg [63:0] pc_out,           // 下一阶段的输入pc
+    output reg [63:0] pc_WB,           // 下一阶段的输入pc
     output reg [1:0] rf_wr_sel_MEM,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
     output reg rf_wr_en_MEM,            // 传入到wb阶段的寄存器写使能信号
     output reg [63:0] mem_data_MEM,     // 内存读取的数据
@@ -47,7 +47,7 @@ module pipeline_mem_stage (
             dm_din <= 64'b0;
             dm_rd_ctrl <= 3'b0;
             dm_wr_ctrl <= 3'b0;
-            pc_out <= 0;
+            pc_WB <= 0;
             rf_wr_en_MEM <= 0;
             rf_wr_sel_MEM <= 0;
         end else begin
@@ -66,7 +66,7 @@ module pipeline_mem_stage (
             dm_din <= reg_data2_EX;           // 写入的数据来自寄存器堆中的第二个源寄存器
             dm_rd_ctrl <= dm_rd_ctrl_id;      // 直接传递内存读控制信号
             dm_wr_ctrl <= dm_wr_ctrl_id;      // 直接传递内存写控制信号
-            pc_out <= pc_MEM;
+            pc_WB <= pc_MEM;
             rf_wr_en_MEM <= rf_wr_en_EX;
             rf_wr_sel_MEM <= rf_wr_sel_EX;
         end

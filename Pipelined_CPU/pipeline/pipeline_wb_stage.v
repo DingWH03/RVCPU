@@ -11,7 +11,7 @@ module pipeline_wb_stage (
     input wire [63:0] mem_data_MEM,    // 从MEM阶段传递的内存数据
     input wire [4:0] rd_MEM,           // 从MEM阶段传递的目的寄存器地址
     input wire reg_write_MEM,          // 来自MEM阶段的写寄存器信号
-    input wire [63:0] pc_in,           // 该阶段的pc值
+    input wire [63:0] pc_WB,           // 该阶段的pc值
 
     output reg [63:0] write_data_WB,   // 写回寄存器的数据
     output reg [4:0] rd_WB,            // 写回的目的寄存器地址
@@ -19,7 +19,7 @@ module pipeline_wb_stage (
 );
 
     wire [63:0] pc_plus4;
-    assign pc_plus4 = pc_in + 4;
+    assign pc_plus4 = pc_WB + 4;
 
     // 写回数据选择逻辑
     always @(posedge clk or negedge reset)
