@@ -74,7 +74,7 @@ end
 always @(*)
 begin
     if (dm_wr_ctrl == 3'b011)  // 对应于 is_sw
-        byte_en = 8'b11111111;
+        byte_en = 8'b00001111;
     else if (dm_wr_ctrl == 3'b010)  // 对应于 is_sh
     begin
         if (dm_addr[2] == 1'b1) 
