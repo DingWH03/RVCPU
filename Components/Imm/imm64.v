@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module imm(
 input       [31:0] inst,
 output reg  [63:0] out

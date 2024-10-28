@@ -1,13 +1,26 @@
+`timescale 1ns / 1ns
 module RVCPU(
 input clk,
-input rst,
-output [63:0] im_addr_mem0,
-input [31:0] im_dout_mem0,
-output [2:0] dm_rd_ctrl_mem,
-output [2:0] dm_wr_ctrl_mem,
-output [63:0] dm_addr_mem,
-output [63:0] dm_din_mem,
-input [63:0] dm_dout_mem
+input rst
+);
+
+wire [63:0] im_addr_mem0;
+wire [31:0] im_dout_mem0;
+wire [2:0] dm_rd_ctrl_mem;
+wire [2:0] dm_wr_ctrl_mem;
+wire [63:0] dm_addr_mem;
+wire [63:0] dm_din_mem;
+wire [63:0] dm_dout_mem;
+
+mem mem0(
+    .clk(clk),
+    .im_addr(im_addr_mem0),
+    .im_dout(im_dout_mem0),
+    .dm_rd_ctrl(dm_rd_ctrl_mem),
+    .dm_wr_ctrl(dm_wr_ctrl_mem),
+    .dm_addr(dm_addr_mem),
+    .dm_din(dm_din_mem),
+    .dm_dout(dm_dout_mem)
 );
 
 wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递

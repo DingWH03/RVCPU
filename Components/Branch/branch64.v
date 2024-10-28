@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module branch(         
     input [63:0]  REG1,  // 源操作数1
     input [63:0]  REG2,  // 源操作数2

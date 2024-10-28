@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module reg_file(
     input          clk,
     input  [4:0]   A1, A2, A3,     // 5-bit addresses for registers

@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module ALU(
 input [63:0] SrcA, SrcB,
 input [3:0]  func,

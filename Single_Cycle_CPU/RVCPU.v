@@ -1,13 +1,26 @@
+`timescale 1ns / 1ns
 module RVCPU(
 input clk,
-input rst,
-output [63:0] im_addr,
-input [31:0] im_dout,
-output [2:0] dm_rd_ctrl,
-output [2:0] dm_wr_ctrl,
-output [63:0] dm_addr,
-output [63:0] dm_din,
-input [63:0] dm_dout
+input rst
+);
+
+wire [63:0] im_addr;
+wire [31:0] im_dout;
+wire [2:0] dm_rd_ctrl;
+wire [2:0] dm_wr_ctrl;
+wire [63:0] dm_addr;
+wire [63:0] dm_din;
+wire [63:0] dm_dout;
+
+mem mem0(
+    .clk(clk),
+    .im_addr(im_addr),
+    .im_dout(im_dout),
+    .dm_rd_ctrl(dm_rd_ctrl),
+    .dm_wr_ctrl(dm_wr_ctrl),
+    .dm_addr(dm_addr),
+    .dm_din(dm_din),
+    .dm_dout(dm_dout)
 );
 
 wire    [31:0]  inst;

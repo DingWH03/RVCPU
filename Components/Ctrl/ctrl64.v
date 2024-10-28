@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module ctrl(
 input     [31:0]  inst,
 output            rf_wr_en,

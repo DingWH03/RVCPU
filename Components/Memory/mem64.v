@@ -1,3 +1,4 @@
+`timescale 1ns / 1ns
 module mem(
     input           clk,
     input   [63:0]  im_addr,
@@ -23,11 +24,11 @@ end
 
 initial
 begin
-    $readmemb("../meminit/inst.dat",inst_mem);
-    // 打印内存前10个地址的值
-    for(i=0; i<10; i=i+1) begin
-        $display("inst_mem[%0d] = %h", i, inst_mem[i]);
-    end
+   $readmemb("/home/dwh/code/RVCPU/meminit/inst.dat",inst_mem);
+   // 打印内存前10个地址的值
+   for(i=0; i<10; i=i+1) begin
+       $display("inst_mem[%0d] = %h", i, inst_mem[i]);
+   end
 end
 
 // 读取指令存储（IM）
