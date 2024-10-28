@@ -28,16 +28,18 @@ module pipeline_mem_stage (
     output reg [63:0] pc_WB,           // 下一阶段的输入pc
     output reg [1:0] rf_wr_sel_MEM,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
     output reg rf_wr_en_MEM,            // 传入到wb阶段的寄存器写使能信号
-    output reg [63:0] mem_data_MEM,     // 内存读取的数据
+    output [63:0] mem_data_MEM,     // 内存读取的数据
     output reg [63:0] alu_result_MEM,   // 直接传递的ALU结果（用于不需要内存操作的指令）
     output reg [4:0] rd_MEM,            // 传递给下一个阶段的目的寄存器地址
     output reg mem_read_done_MEM        // 内存读取完成信号
 );
 
+    assign mem_data_MEM = dm_dout;
+
     always @(posedge clk or negedge reset) begin
         if (reset) begin
             // 复位时清空寄存器
-            mem_data_MEM <= 64'b0;
+            // mem_data_MEM <= 64'b0;
             alu_result_MEM <= 64'b0;
             mem_read_done_MEM <= 1'b0;
             rd_MEM <= 5'b0;
@@ -58,7 +60,7 @@ module pipeline_mem_stage (
             rd_MEM <= rd_EX;
 
             // 内存读操作
-            mem_data_MEM <= dm_dout;          // 从内存读取数据
+            // mem_data_MEM <= dm_dout;          // 从内存读取数据
             mem_read_done_MEM <= 1'b1;        // 读操作完成信号
 
             // 内存访问信号

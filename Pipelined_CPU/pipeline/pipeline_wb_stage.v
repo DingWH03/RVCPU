@@ -19,17 +19,19 @@ module pipeline_wb_stage (
 );
 
     wire [63:0] pc_plus4;
+    reg [63:0] write_data_MEM;
     assign pc_plus4 = pc_WB + 4;
 
+
     // 写回数据选择逻辑
-    always @(posedge clk or negedge reset)
+    always @(*)
     begin
     case(rf_wr_sel)
-        2'b00:  write_data_WB = 64'h0;
-        2'b01:  write_data_WB = pc_plus4;
-        2'b10:  write_data_WB = alu_result_MEM;
-        2'b11:  write_data_WB = mem_data_MEM;
-    default:write_data_WB = 64'h0;
+        2'b00:  write_data_MEM = 64'h0;
+        2'b01:  write_data_MEM = pc_plus4;
+        2'b10:  write_data_MEM = alu_result_MEM;
+        2'b11:  write_data_MEM = mem_data_MEM;
+    default:write_data_MEM = 64'h0;
     endcase
     end
 
@@ -42,6 +44,7 @@ module pipeline_wb_stage (
         end else begin
             rd_WB <= rd_MEM;              // 将目的寄存器地址传递给写回阶段
             reg_write_WB <= reg_write_MEM; // 将寄存器写使能信号传递给写回阶段
+            write_data_WB <= write_data_MEM;
         end
     end
 
