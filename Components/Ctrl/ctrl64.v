@@ -11,6 +11,8 @@ output            alu_b_sel,
 output reg    [3:0]   alu_ctrl,
 output reg    [2:0]   dm_rd_ctrl,
 output reg    [2:0]   dm_wr_ctrl,
+output                is_debug,
+output                is_syscall,
 input   wire    [6:0]   opcode,
 input   wire    [2:0]   funct3,
 input   wire    [6:0]   funct7
@@ -57,6 +59,9 @@ wire    is_and;
 wire    is_ld; // 64位load
 wire    is_sd; // 64位store
 
+wire    is_ebreak;
+wire    is_ecall;
+
 wire    is_add_type;
 wire    is_u_type;
 wire    is_jump_type;
@@ -90,6 +95,8 @@ assign  is_sw   = (opcode == 7'h23) && (funct3 ==3'h2) ;
 
 assign  is_ld   = (opcode == 7'h03) && (funct3 == 3'b011);  // 64位加载
 assign  is_sd   = (opcode == 7'h23) && (funct3 == 3'b011);  // 64位存储
+assign  is_ebreak = (inst == 32'b00000000000100000000000001110011);
+assign  is_ecall = (inst == 32'b00000000000000000000000001110011);
 
 assign  is_addi = (opcode == 7'h13) && (funct3 ==3'h0) ;
 assign  is_slti = (opcode == 7'h13) && (funct3 ==3'h2) ;
@@ -120,7 +127,7 @@ assign  is_r_type   = is_add | is_sub | is_sll | is_slt | is_sltu | is_xor
                     | is_srl | is_sra | is_or | is_and ;
 assign  is_i_type   = is_jalr | is_lb | is_lh | is_lw | is_lbu | is_lhu 
                     | is_addi | is_slti | is_sltiu | is_xori | is_ori | is_andi
-                    | is_slli | is_srli | is_srai ;
+                    | is_slli | is_srli | is_srai | is_ebreak | is_ecall;
 assign  is_s_type   = is_sb | is_sh | is_sw ;
 //rf_wr_en  
 assign rf_wr_en     =  is_u_type | is_jump_type | is_i_type | is_r_type ;  
@@ -137,6 +144,9 @@ begin
     else rf_wr_sel = 2'b00;
 end
 
+// ecall与ebreak
+assign is_syscall = is_ecall;
+assign is_debug = is_ebreak;
   
 //do_jump
 assign do_jump      =  is_jalr | is_jal | is_b_type ;

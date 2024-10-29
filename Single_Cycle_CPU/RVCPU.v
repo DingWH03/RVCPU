@@ -1,8 +1,37 @@
 `timescale 1ns / 1ns
 module RVCPU(
-input clk,
-input rst
+    input clk,
+    input rst,
+    input continue_key,
+    output [7:0] led,
+	output [7:0] led_addr
 );
+
+assign led = alu_out[7:0];
+assign led_addr = im_addr[9:2];
+reg cpu_paused;
+reg continue_key_prev; // 用于检测按钮的前一个状态
+wire is_debug;
+
+always @(posedge clk or posedge rst) begin
+    if (rst) begin
+        cpu_paused <= 0;
+        continue_key_prev <= 0; // 初始化之前的按钮状态
+    end else begin
+        continue_key_prev <= continue_key; // 更新按钮状态
+
+        if (continue_key && !continue_key_prev) begin
+            // 检测到按钮按下并松开
+            if (is_debug && cpu_paused == 0) begin
+                cpu_paused <= 1; // 继续执行
+            end else if (cpu_paused) begin
+                cpu_paused <= 0; // 从暂停状态恢复
+            end
+        end else if (is_debug && cpu_paused == 0) begin
+            cpu_paused <= 1; // 当处于调试模式且未暂停时，设置为暂停
+        end
+    end
+end
 
 wire [63:0] im_addr;
 wire [31:0] im_dout;
@@ -128,7 +157,7 @@ PC	pc0(
     .rst		(rst),
     .JUMP		(JUMP),
 	.JUMP_PC    (pc+imm_out),
-	.stall		(1'b0),
+	.stall		(cpu_paused),
 	.pc         (pc)
 );
 imm	imm0(
@@ -160,6 +189,7 @@ ctrl ctrl0(
 	.alu_ctrl   (alu_ctrl),
 	.dm_rd_ctrl (dm_rd_ctrl),
 	.dm_wr_ctrl (dm_wr_ctrl),
+	.is_debug(is_debug),
 	.opcode(inst[6:0]),
 	.funct7(inst[31:25]),
 	.funct3(inst[14:12])
