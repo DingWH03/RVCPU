@@ -12,15 +12,57 @@ wire [63:0] dm_addr;
 wire [63:0] dm_din;
 wire [63:0] dm_dout;
 
-mem mem0(
-    .clk(clk),
-    .im_addr(im_addr),
-    .im_dout(im_dout),
+// 初始化内存控制器
+// module dram_ctrl(
+//     input   [2:0]   dm_rd_ctrl,
+//     input   [2:0]   dm_wr_ctrl,
+//     input   [63:0]  dm_addr,
+//     input   [63:0]  dm_din,
+//     output reg  [63:0] dm_dout,
+//     // 下面用来连接存储芯片
+//     input   [63:0]  mem_out,
+//     output          write_en,
+//     output  reg [63:0] dm_din_a,
+//     output wire [63:0] addr
+// );
+dram_ctrl dram_ctrl0(
     .dm_rd_ctrl(dm_rd_ctrl),
     .dm_wr_ctrl(dm_wr_ctrl),
     .dm_addr(dm_addr),
     .dm_din(dm_din),
-    .dm_dout(dm_dout)
+    .dm_dout(dm_dout),
+    .mem_out(mem_out),
+    .write_en(write_en),
+    .dm_din_a(dm_din_a),
+    .addr(addr_dram_ctrl)
+);
+
+// 连接dram和dram_ctrl的线路----------------------------------
+wire [63:0] dm_din_a;
+wire write_en;
+wire [63:0] addr_dram_ctrl;
+wire [63:0] mem_out;
+// -----------------------------------------------------
+
+// 初始化dram实例
+dram dram0 (
+    .clk(clk),
+    .addr(addr_dram_ctrl),
+    .dm_din(dm_din_a),
+    .write_en(write_en),
+    .mem_out(mem_out)
+);
+
+// 初始化rom实例
+// module rom(
+//     input           clk,
+//     input   [63:0]  im_addr,
+//     output  reg [31:0]  im_dout
+// );
+rom rom0(
+    .clk(clk),
+    .im_addr(im_addr),
+    .im_dout(im_dout)
 );
 
 wire    [31:0]  inst;

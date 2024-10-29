@@ -12,17 +12,6 @@ wire [63:0] dm_addr_mem;
 wire [63:0] dm_din_mem;
 wire [63:0] dm_dout_mem;
 
-mem mem0(
-    .clk(clk),
-    .im_addr(im_addr_mem0),
-    .im_dout(im_dout_mem0),
-    .dm_rd_ctrl(dm_rd_ctrl_mem),
-    .dm_wr_ctrl(dm_wr_ctrl_mem),
-    .dm_addr(dm_addr_mem),
-    .dm_din(dm_din_mem),
-    .dm_dout(dm_dout_mem)
-);
-
 wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递
 
 wire [31:0] instruction_IF; // if阶段取出的指令连接到id阶段
@@ -106,6 +95,59 @@ wire [4:0] rd_MEM;          // 传递过来的寄存器号
 wire rf_wr_en_MEM;          // 从id阶段传递过来的寄存器写使能信号
 wire [1:0] rf_wr_sel_MEM;   // 从id阶段传递过来的寄存器写入数据选择信号
 // --------------------------------------------------------------
+
+// 初始化内存控制器
+// module dram_ctrl(
+//     input   [2:0]   dm_rd_ctrl,
+//     input   [2:0]   dm_wr_ctrl,
+//     input   [63:0]  dm_addr,
+//     input   [63:0]  dm_din,
+//     output reg  [63:0] dm_dout,
+//     // 下面用来连接存储芯片
+//     input   [63:0]  mem_out,
+//     output          write_en,
+//     output  reg [63:0] dm_din_a,
+//     output wire [63:0] addr
+// );
+dram_ctrl dram_ctrl0(
+    .dm_rd_ctrl(dm_rd_ctrl_mem),
+    .dm_wr_ctrl(dm_wr_ctrl_mem),
+    .dm_addr(dm_addr_mem),
+    .dm_din(dm_din_mem),
+    .dm_dout(dm_dout_mem),
+    .mem_out(mem_out),
+    .write_en(write_en),
+    .dm_din_a(dm_din_a),
+    .addr(addr_dram_ctrl)
+);
+
+// 连接dram和dram_ctrl的线路----------------------------------
+wire [63:0] dm_din_a;
+wire write_en;
+wire [63:0] addr_dram_ctrl;
+wire [63:0] mem_out;
+// -----------------------------------------------------
+
+// 初始化dram实例
+dram dram0 (
+    .clk(clk),
+    .addr(addr_dram_ctrl),
+    .dm_din(dm_din_a),
+    .write_en(write_en),
+    .mem_out(mem_out)
+);
+
+// 初始化rom实例
+// module rom(
+//     input           clk,
+//     input   [63:0]  im_addr,
+//     output  reg [31:0]  im_dout
+// );
+rom rom0(
+    .clk(clk),
+    .im_addr(im_addr_mem0),
+    .im_dout(im_dout_mem0)
+);
 
 // 顶层模块初始化寄存器堆
 reg_file reg_file0(
