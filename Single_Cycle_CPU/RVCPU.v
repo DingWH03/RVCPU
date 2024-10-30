@@ -3,17 +3,19 @@ module RVCPU(
     input clk,
     input rst,
     input continue_key,
-    output [7:0] led,
+    output reg [7:0] led,
 	output [7:0] led_addr
 );
 
-assign led = alu_out[7:0];
+
 assign led_addr = im_addr[9:2];
+always @(posedge clk) led <= alu_out[7:0];
+
 reg cpu_paused;
 reg continue_key_prev; // 用于检测按钮的前一个状态
 wire is_debug;
 
-always @(posedge clk or posedge rst) begin
+always @(posedge is_debug or posedge rst or negedge continue_key) begin
     if (rst) begin
         cpu_paused <= 0;
         continue_key_prev <= 0; // 初始化之前的按钮状态
