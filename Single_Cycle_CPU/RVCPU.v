@@ -9,13 +9,13 @@ module RVCPU(
 
 
 assign led_addr = im_addr[9:2];
-always @(posedge clk) led <= alu_out[7:0];
+always @(posedge clk) if(!is_debug) led <= alu_out[7:0];
 
 reg cpu_paused;
 reg continue_key_prev; // 用于检测按钮的前一个状态
 wire is_debug;
 
-always @(posedge is_debug or posedge rst or negedge continue_key) begin
+always @(posedge is_debug or posedge rst or posedge clk) begin
     if (rst) begin
         cpu_paused <= 0;
         continue_key_prev <= 0; // 初始化之前的按钮状态
