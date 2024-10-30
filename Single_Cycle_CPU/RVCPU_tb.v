@@ -14,7 +14,7 @@ module RVCPU_tb;
 
    // 时钟生成
    initial begin
-       clk = 0;
+       clk = 1;
        forever #5 clk = ~clk;  // 每5个时间单位翻转一次时钟
    end
 

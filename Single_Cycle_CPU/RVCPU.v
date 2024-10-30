@@ -3,13 +3,13 @@ module RVCPU(
     input clk,
     input rst,
     input continue_key,
-    output reg [7:0] led,
+    output [7:0] led,
 	output [7:0] led_addr
 );
 
 
 assign led_addr = im_addr[9:2];
-always @(posedge clk) if(!is_debug) led <= alu_out[7:0];
+assign led = alu_out[7:0];
 
 reg cpu_paused;
 reg continue_key_prev; // 用于检测按钮的前一个状态
@@ -25,12 +25,12 @@ always @(posedge is_debug or posedge rst or posedge clk) begin
         if (continue_key && !continue_key_prev) begin
             // 检测到按钮按下并松开
             if (is_debug && cpu_paused == 0) begin
-                cpu_paused <= 1; // 继续执行
+                cpu_paused <= 1; // 按着按钮时遇到下一条指令继续暂停
             end else if (cpu_paused) begin
                 cpu_paused <= 0; // 从暂停状态恢复
             end
         end else if (is_debug && cpu_paused == 0) begin
-            cpu_paused <= 1; // 当处于调试模式且未暂停时，设置为暂停
+            cpu_paused = 1; // 当处于调试模式且未暂停时，设置为暂停
         end
     end
 end
