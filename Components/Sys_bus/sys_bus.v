@@ -8,7 +8,21 @@ module system_bus(
     input       [2:0]   rd_ctrl,       // 读取控制信号
     input       [2:0]   wr_ctrl,       // 写入控制信号
     output  reg [63:0]  data_out,      // 输出数据
-    output  reg         valid          // 有效信号
+    output  reg         valid,          // 有效信号
+    // 连接dram_ctrl
+    output [2:0] dm_rd_ctrl,
+    output [2:0] dm_wr_ctrl,
+    output [63:0] dm_addr,
+    output [63:0] dm_din,
+    input [63:0] dram_dout,
+    // 连接rom
+    output [63:0] rom_addr,
+    input [31:0] rom_dout,
+    // 连接gpio
+    output [63:0] gpio_addr,
+    output [63:0] gpio_data_in,
+    input [63:0] gpio_dout,
+    output [2:0] gpio_wr_ctrl
 );
 
 // 地址解码
@@ -16,36 +30,28 @@ wire is_dram = (addr >= 64'h80000000) && (addr < 64'h80001000);  // DRAM地址�
 wire is_rom  = (addr < 64'h00004000);                            // ROM地址范围
 wire is_gpio = (addr >= 64'h40000000) && (addr < 64'h40000010);  // GPIO地址范围（假设4个寄存器）
 
-// 中间连接信号
-wire [63:0] dram_dout;
-wire [31:0] rom_dout;
-wire [31:0] gpio_dout;
+// 连接DRAM模块
+assign dm_rd_ctrl = rd_ctrl;
+assign dm_wr_ctrl = wr_ctrl;
+assign dm_addr = addr;
+assign dm_din = data_in;
 
-// DRAM 模块实例
-dram dram_inst(
-    .clk(clk),
-    .dm_rd_ctrl(rd_ctrl),
-    .dm_wr_ctrl(wr_ctrl),
-    .dm_addr(addr),
-    .dm_din(data_in),
-    .dm_dout(dram_dout)
-);
-
-// ROM 模块实例
-rom rom_inst(
-    .clk(clk),
-    .im_addr(addr),
-    .im_dout(rom_dout)
-);
+// 连接ROM模块
+assign rom_addr = addr;
 
 // GPIO 模块实例
-gpio gpio_inst(
-    .clk(clk),
-    .addr(addr),
-    .data_in(data_in[31:0]),  // GPIO为32位数据宽度
-    .wr_ctrl(wr_ctrl),
-    .data_out(gpio_dout)
-);
+// gpio gpio_inst(
+//     .clk(clk),
+//     .addr(addr),
+//     .data_in(data_in[31:0]),  // GPIO为32位数据宽度
+//     .wr_ctrl(wr_ctrl),
+//     .data_out(gpio_dout)
+// );
+
+// 连接GPIO模块
+assign gpio_addr = addr;
+assign gpio_data_in = data_in;
+assign gpio_wr_ctrl = wr_ctrl;
 
 // 根据地址范围选择输出
 always @(*) begin
