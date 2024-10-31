@@ -35,7 +35,8 @@ PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_if_stage.v \
 				$(PIPELINE_DIR)/pipeline_mem_stage.v \
 				$(PIPELINE_DIR)/pipeline_wb_stage.v 
 RVCU_SRC = $(RVCU_DIR)/RV64CPU.v \
-			$(RVCU_DIR)/RVCPU_tb.v
+			$(RVCU_DIR)/RVCPU_tb.v \
+			$(RVCU_DIR)/data_path.v
 
 # Output files
 OUTPUT = $(OUTPUT_DIR)/RVCPU_tb.vvp

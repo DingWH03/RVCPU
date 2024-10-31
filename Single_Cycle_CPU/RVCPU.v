@@ -15,6 +15,7 @@ reg cpu_paused;
 reg continue_key_prev; // 用于检测按钮的前一个状态
 wire is_debug;
 
+// 断点继续调试按钮
 always @(posedge is_debug or posedge rst or posedge clk) begin
     if (rst) begin
         cpu_paused <= 0;
@@ -85,11 +86,6 @@ dram dram0 (
 );
 
 // 初始化rom实例
-// module rom(
-//     input           clk,
-//     input   [63:0]  im_addr,
-//     output  reg [31:0]  im_dout
-// );
 rom rom0(
     .clk(clk),
     .im_addr(im_addr),
@@ -118,10 +114,6 @@ wire            alu_a_sel;
 wire            alu_b_sel;
 wire    [63:0]  alu_a,alu_b,alu_out; 
 wire    [3:0]   alu_ctrl;
-  
-// wire    [2:0]   dm_rd_ctrl;
-// wire    [2:0]   dm_wr_ctrl;
-// wire    [63:0]  dm_dout;
   
 always@(*)
 begin

@@ -1,6 +1,35 @@
 # RVCPU_DEMO
 
-## Quick Start
+## Introduction
+
+This project is a demo of a RISC-V CPU, implementing core functionality and supporting various features typical to RISC-V processors.
+
+## Features
+
+### Completed
+
+- [x] Basic ALU operations (ADD, SUB, AND, OR, XOR)
+- [x] Instruction Fetch, Decode, Execute, Memory, and Write Back stages
+- [x] Immediate value generation and handling
+- [x] Register file read and write operations
+- [x] Load and store operations (LW, SW)
+- [x] Jump and branch handling (JAL, BEQ, BNE)
+
+### In Progress
+
+- [ ] System bus including ROM, DRAM and peripherals
+- [ ] Control unit for pipeline handling and hazard detection
+- [ ] Support for additional RISC-V instructions (e.g., multiplication and division)
+- [ ] Full forwarding and hazard resolution for all instructions
+- [ ] Cache implementation for instruction and data memory
+
+### Planned Features
+
+- [ ] CSR (Control and Status Registers) support
+- [ ] Interrupt and exception handling
+- [ ] Full compliance with the RISC-V privileged specification
+
+## Getting Started
 
 ### Installation
 
@@ -16,6 +45,10 @@ sudo apt install make iverilog gtkwave # For debian/ubuntu
 make # compile
 make run # contribute to waveform.vcd
 ```
+
+### Contributing
+
+Contributions are welcome! Please submit issues or pull requests for any bugs or suggested enhancements.
 
 ## Instrustion Set
 
