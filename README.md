@@ -14,9 +14,11 @@ This project is a demo of a RISC-V CPU, implementing core functionality and supp
 - [x] Register file read and write operations
 - [x] Load and store operations (LW, SW)
 - [x] Jump and branch handling (JAL, BEQ, BNE)
+- [x] System bus including ROM, DRAM and peripherals
 
 ### In Progress
 
+- [ ] GPIOs linked to leds
 - [ ] System bus including ROM, DRAM and peripherals
 - [ ] Control unit for pipeline handling and hazard detection
 - [ ] Support for additional RISC-V instructions (e.g., multiplication and division)
