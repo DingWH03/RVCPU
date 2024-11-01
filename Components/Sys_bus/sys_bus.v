@@ -23,6 +23,7 @@ module system_bus(
     output [63:0] gpio_data_in,
     input [63:0] gpio_dout,
     output [2:0] gpio_wr_ctrl,
+    output [2:0] gpio_rd_ctrl,
     // 连接uart
     output [63:0] uart_addr,
     output [31:0] uart_write_data,
