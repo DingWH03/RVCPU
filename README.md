@@ -18,12 +18,13 @@ This project is a demo of a RISC-V CPU, implementing core functionality and supp
 
 ### In Progress
 
+- [ ] Uart
 - [ ] GPIOs linked to leds
-- [ ] System bus including ROM, DRAM and peripherals
 - [ ] Control unit for pipeline handling and hazard detection
 - [ ] Support for additional RISC-V instructions (e.g., multiplication and division)
 - [ ] Full forwarding and hazard resolution for all instructions
 - [ ] Cache implementation for instruction and data memory
+- [ ] Exception and Interrupt Handling
 
 ### Planned Features
 
