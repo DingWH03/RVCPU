@@ -24,6 +24,9 @@ module pipeline_mem_stage (
     output reg [2:0] dm_rd_ctrl,        // 内存读控制信号
     output reg [2:0] dm_wr_ctrl,        // 内存写控制信号
 
+    // 总线占用信号
+    output reg memorying,
+
     // 传递给下一个阶段的信号
     output reg [63:0] pc_WB,           // 下一阶段的输入pc
     output reg [1:0] rf_wr_sel_MEM,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
@@ -52,6 +55,7 @@ module pipeline_mem_stage (
             pc_WB <= 0;
             rf_wr_en_MEM <= 0;
             rf_wr_sel_MEM <= 0;
+            memorying <= 0;
         end else begin
             // 传递给下一个阶段的ALU结果 (对于不需要访问内存的指令)
             alu_result_MEM <= alu_result_EX;
@@ -71,6 +75,7 @@ module pipeline_mem_stage (
             pc_WB <= pc_MEM;
             rf_wr_en_MEM <= rf_wr_en_EX;
             rf_wr_sel_MEM <= rf_wr_sel_EX;
+            memorying <= dm_rd_ctrl_id || dm_wr_ctrl_id;
         end
     end
 

@@ -4,7 +4,7 @@ input clk,
 input rst
 );
 
-// ------------data_path连接到rom和dram----------------------------
+// ------------sys_bus连接到rom和dram----------------------------
 wire [63:0] im_addr_mem0;
 wire [31:0] im_dout_mem0;
 wire [2:0] dm_rd_ctrl_mem;
@@ -30,7 +30,17 @@ wire [63:0] dm_din_a;
 wire write_en;
 wire [63:0] addr_dram_ctrl;
 wire [63:0] mem_out;
-// -----------------------------------------------------
+// ----------------------------------------------------------
+
+// -------------------data_path-sys_bus-----------------------
+wire [63:0] dm_addr, im_addr;
+// ------------------------------------------------------------
+
+// ------------------sys_bus wire------------------------------
+wire [63:0] bus_addr;
+wire [63:0] bus_dout, bus_din;
+wire [2:0] bus_wr_ctrl, bus_rd_ctrl;
+// ------------------------------------------------------------
 
 // 初始化内存控制器
 // module dram_ctrl(
@@ -78,6 +88,51 @@ rom rom0(
     .im_dout(im_dout_mem0)
 );
 
+// // 顶层总线模块
+// module system_bus(
+//     input               clk,
+//     input       [63:0]  addr,          // 系统总线地址
+//     input       [63:0]  data_in,       // 输入数据
+//     input       [2:0]   rd_ctrl,       // 读取控制信号
+//     input       [2:0]   wr_ctrl,       // 写入控制信号
+//     output  reg [63:0]  data_out,      // 输出数据
+//     output  reg         valid,          // 有效信号
+//     // 连接dram_ctrl
+//     output [2:0] dm_rd_ctrl,
+//     output [2:0] dm_wr_ctrl,
+//     output [63:0] dm_addr,
+//     output [63:0] dm_din,
+//     input [63:0] dram_dout,
+//     // 连接rom
+//     output [63:0] rom_addr,
+//     input [31:0] rom_dout,
+//     // 连接gpio
+//     output [63:0] gpio_addr,
+//     output [63:0] gpio_data_in,
+//     input [63:0] gpio_dout,
+//     output [2:0] gpio_wr_ctrl
+// );
+system_bus bus0(
+    .clk(clk),
+    .addr(bus_addr),
+    .data_in(bus_din),
+    .rd_ctrl(bus_rd_ctrl),
+    .wr_ctrl(bus_wr_ctrl),
+    .data_out(bus_dout),
+    .valid(),
+    .dm_rd_ctrl(dm_rd_ctrl_mem),
+    .dm_wr_ctrl(dm_wr_ctrl_mem),
+    .dm_addr(dm_addr_mem),
+    .dm_din(dm_din_mem),
+    .dram_dout(dm_dout_mem),
+    .rom_addr(im_addr_mem0),
+    .rom_dout(im_dout_mem0),
+    .gpio_addr(),
+    .gpio_data_in(),
+    .gpio_dout(),
+    .gpio_wr_ctrl()
+);
+
 // 顶层模块初始化寄存器堆
 reg_file reg_file0(
 	.clk        (clk),
@@ -91,33 +146,31 @@ reg_file reg_file0(
 );
 
 // module data_path(
-//     // -------------到dram和rom的连线------------------------------
-//     output [63:0] im_addr_mem0,
-//     input [31:0] im_dout_mem0,
-//     output [2:0] dm_rd_ctrl_mem,
-//     output [2:0] dm_wr_ctrl_mem,
-//     output [63:0] dm_addr_mem,
-//     output [63:0] dm_din_mem,
-//     input [63:0] dm_dout_mem,
+//     input rst,
+//     input clk,
+//     // -------------到sys_bus的连线---------------------------------
+//     output [2:0] bus_rd_ctrl,
+//     output [2:0] bus_wr_ctrl,
+//     output [63:0] bus_addr,
+//     output [63:0] bus_din,
+//     input [63:0] bus_dout,
 //     // ------------id阶段与寄存器堆的连接信号----------------------
 //     input [63:0] data_reg_read_1, data_reg_read_2, // 寄存器堆返回的数据信号
 //     output [4:0] addr_reg_read_1, addr_reg_read_2,  // 连接源寄存器堆地址
-// // --------------wb阶段的输出(与寄存器堆的连线)-----------------
-// input [63:0] write_data_WB,   // 数据信号
-// output [4:0] rd_WB,            // 地址信号
-// output reg_write_WB           // 使能控制信号
-// // -------------------------------------------------------------
+//     // --------------wb阶段的输出(与寄存器堆的连线)-----------------
+//     output [63:0] write_data_WB,   // 数据信号
+//     output [4:0] rd_WB,            // 地址信号
+//     output reg_write_WB           // 使能控制信号
+//     // -------------------------------------------------------------
 // );
 data_path data_path0(
     .rst(rst),
     .clk(clk),
-    .im_addr_mem0(im_addr_mem0),
-    .im_dout_mem0(im_dout_mem0),
-    .dm_rd_ctrl_mem(dm_rd_ctrl_mem),
-    .dm_wr_ctrl_mem(dm_wr_ctrl_mem),
-    .dm_addr_mem(dm_addr_mem),
-    .dm_din_mem(dm_din_mem),
-    .dm_dout_mem(dm_dout_mem),
+    .bus_rd_ctrl(bus_rd_ctrl),
+    .bus_wr_ctrl(bus_wr_ctrl),
+    .bus_addr(bus_addr),
+    .bus_din(bus_din),
+    .bus_dout(bus_dout),
     .data_reg_read_1(data_reg_read_1),
     .data_reg_read_2(data_reg_read_2),
     .addr_reg_read_1(addr_reg_read_1),

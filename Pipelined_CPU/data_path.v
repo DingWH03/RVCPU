@@ -2,27 +2,29 @@
 module data_path(
     input rst,
     input clk,
-    // -------------到dram和rom的连线------------------------------
-    output [63:0] im_addr_mem0,
-    input [31:0] im_dout_mem0,
-    output [2:0] dm_rd_ctrl_mem,
-    output [2:0] dm_wr_ctrl_mem,
-    output [63:0] dm_addr_mem,
-    output [63:0] dm_din_mem,
-    input [63:0] dm_dout_mem,
+    // -------------到sys_bus的连线---------------------------------
+    output [2:0] bus_rd_ctrl,
+    output [2:0] bus_wr_ctrl,
+    output [63:0] bus_addr,
+    output [63:0] bus_din,
+    input [63:0] bus_dout,
+    
     // ------------id阶段与寄存器堆的连接信号----------------------
     input [63:0] data_reg_read_1, data_reg_read_2, // 寄存器堆返回的数据信号
     output [4:0] addr_reg_read_1, addr_reg_read_2,  // 连接源寄存器堆地址
-// --------------wb阶段的输出(与寄存器堆的连线)-----------------
-output [63:0] write_data_WB,   // 数据信号
-output [4:0] rd_WB,            // 地址信号
-output reg_write_WB           // 使能控制信号
-// -------------------------------------------------------------
+    // --------------wb阶段的输出(与寄存器堆的连线)-----------------
+    output [63:0] write_data_WB,   // 数据信号
+    output [4:0] rd_WB,            // 地址信号
+    output reg_write_WB           // 使能控制信号
+    // -------------------------------------------------------------
 );
 
 wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递
 
+// -----------------------if阶段-------------------------------
 wire [31:0] instruction_IF; // if阶段取出的指令连接到id阶段
+wire [63:0] im_addr_mem0;
+// ---------------------------------------------------------------
 
 // ------------id阶段的输出，连接到ex阶段----------------------
 // wire [6:0] opcode_ID; 
@@ -80,6 +82,12 @@ wire rf_wr_en_MEM;          // 从id阶段传递过来的寄存器写使能信�
 wire [1:0] rf_wr_sel_MEM;   // 从id阶段传递过来的寄存器写入数据选择信号
 // --------------------------------------------------------------
 
+// -----------------mem阶段总线占用信号------------------------
+wire memorying;
+assign bus_addr = memorying?dm_addr_mem:im_addr_mem0;
+wire [63:0] dm_addr_mem;
+// -----------------------------------------------------------
+
 // stage1
 // module pipeline_if_stage (
 //     input wire clk,              // 时钟信号
@@ -98,10 +106,10 @@ wire [1:0] rf_wr_sel_MEM;   // 从id阶段传递过来的寄存器写入数据�
 pipeline_if_stage stage1(
     .clk(clk),
     .reset(rst),
-    .stall(1'b0),
+    .stall(memorying),
     .branch_taken(branch_taken),
     .branch_target(branch_target),
-    .im_dout(im_dout_mem0),
+    .im_dout(bus_dout[31:0]),
     .im_addr(im_addr_mem0),
     .pc_IF(pc_if_to_id), // 传入下一周期的PC值(等于当前阶段指令位置)
     .instruction_IF(instruction_IF)
@@ -288,10 +296,11 @@ pipeline_mem_stage stage4(
     .dm_rd_ctrl_id(dm_rd_ctrl_EX),  // 修改为从EX阶段传入
     .dm_wr_ctrl_id(dm_wr_ctrl_EX),  // 修改为从EX阶段传入
     .dm_addr(dm_addr_mem),
-    .dm_din(dm_din_mem),
-    .dm_dout(dm_dout_mem),
-    .dm_rd_ctrl(dm_rd_ctrl_mem),
-    .dm_wr_ctrl(dm_wr_ctrl_mem),
+    .dm_din(bus_din),
+    .dm_dout(bus_dout),
+    .dm_rd_ctrl(bus_rd_ctrl),
+    .dm_wr_ctrl(bus_wr_ctrl),
+    .memorying(memorying),
     .rf_wr_sel_MEM(rf_wr_sel_MEM),
     .pc_WB(pc_mem_to_wb),
     .rf_wr_en_MEM(rf_wr_en_MEM),
