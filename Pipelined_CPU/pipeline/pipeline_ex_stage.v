@@ -6,6 +6,7 @@
 module pipeline_ex_stage (
     input wire clk,                  // 时钟信号
     input wire reset,                // 复位信号，低电平有效
+    input wire stall,            // 流水线暂停信号
     input wire [63:0] reg_data1_EX,  // 从ID阶段传递的源操作数1
     input wire [63:0] reg_data2_EX,  // 从ID阶段传递的源操作数2
     input wire [63:0] imm_EX,        // 从ID阶段传递的立即数
@@ -66,7 +67,7 @@ module pipeline_ex_stage (
         if (reset) begin
             branch_taken_EX <= 1'b0;
             branch_target_EX <= 64'b0;
-        end else begin
+        end else if (~stall) begin
             branch_taken_EX <= 1'b0;  // 默认不跳转
             branch_target_EX <= 64'b0;
 
@@ -98,7 +99,7 @@ module pipeline_ex_stage (
             rd_MEM <= 0;
             rf_wr_en_EX <= 0;
             rf_wr_sel_EX <= 0;
-        end else begin
+        end else if(~stall) begin
             // ALU结果在时钟上升沿更新
             alu_result_EX <= alu_result;
             pc_MEM <= pc_EX;

@@ -6,6 +6,8 @@
 module pipeline_id_stage (
     input wire clk,                   // 时钟信号
     input wire reset,                 // 复位信号，低电平有效
+    input wire stall,            // 流水线暂停信号
+    input wire flush,               // 流水线冲刷信号
     input wire [31:0] instruction_IF, // 从IF阶段传来的指令
     input wire [63:0] pc_IF,          // 从IF阶段传来的PC值
 
@@ -75,7 +77,7 @@ module pipeline_id_stage (
 
     // 时钟上升沿的逻辑，用于锁存信号
     always @(posedge clk or negedge reset) begin
-        if (reset) begin
+        if (reset||flush) begin
             // 复位时清空寄存器
             rd_ID          <= 5'b0;
             rf_wr_en       <= 1'b0;
@@ -92,7 +94,7 @@ module pipeline_id_stage (
             instruction_ID <= 0;
             addr_reg_read_1 <= 0;  // rs1地址
             addr_reg_read_2 <= 0;  // rs2地址
-        end else begin
+        end else if(~stall) begin
             // 锁存解码得到的字段
             rd_ID          <= instruction_IF[11:7];   // 目的寄存器
 

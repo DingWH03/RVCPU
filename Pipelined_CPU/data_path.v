@@ -156,6 +156,8 @@ pipeline_if_stage stage1(
 pipeline_id_stage stage2(
     .clk(clk),
     .reset(rst),
+    .flush(1'b0),
+    .stall(1'b0),
     .instruction_IF(instruction_IF),
     .pc_IF(pc_if_to_id),
     .data_reg_read_1(data_reg_read_1),
@@ -222,6 +224,7 @@ pipeline_id_stage stage2(
 pipeline_ex_stage stage3(
     .clk(clk),
     .reset(rst),
+    .stall(1'b0),
     .reg_data1_EX(reg_data1_ID),
     .reg_data2_EX(reg_data2_ID),
     .imm_EX(imm_ID),
