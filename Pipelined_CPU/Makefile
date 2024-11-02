@@ -15,6 +15,8 @@ DRAM_DIR = $(COMPONENTS_DIR)/Dram
 ROM_DIR = $(COMPONENTS_DIR)/Rom
 PC_DIR = $(COMPONENTS_DIR)/PC
 REGFILE_DIR = $(COMPONENTS_DIR)/RegisterFile
+UART_DIR = $(COMPONENTS_DIR)/UART
+GPIO_DIR = $(COMPONENTS_DIR)/GPIO
 SYS_BUS_DIR = $(COMPONENTS_DIR)/Sys_bus
 RVCU_DIR = $(SRC_DIR)/Pipelined_CPU
 PIPELINE_DIR = $(RVCU_DIR)/pipeline
@@ -30,6 +32,10 @@ DRAM_SRC = $(DRAM_DIR)/dram.v
 ROM_SRC = $(ROM_DIR)/rom.v
 PC_SRC = $(PC_DIR)/PC.v
 REGFILE_SRC = $(REGFILE_DIR)/regfileI64.v 
+UART_SRC = $(UART_DIR)/uart.v \
+			$(UART_DIR)/uart_rx.v \
+			$(UART_DIR)/uart_tx.v
+GPIO_SRC = $(GPIO_DIR)/gpio.v 
 SYS_BUS_SRC = $(SYS_BUS_DIR)/sys_bus.v 
 PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_if_stage.v \
 				$(PIPELINE_DIR)/pipeline_id_stage.v \
@@ -52,7 +58,7 @@ $(OUTPUT_DIR):
 	mkdir -p $(OUTPUT_DIR)
 
 # Compile the design
-$(OUTPUT): $(OUTPUT_DIR) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(PC_SRC) $(REGFILE_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
+$(OUTPUT): $(OUTPUT_DIR) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(PC_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
 	$(IVERILOG) -o $(OUTPUT) $^
 
 # Run the simulation

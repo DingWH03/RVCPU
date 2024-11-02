@@ -7,7 +7,7 @@ output  wire [7:0]  led,
 
 output  [31:0] uart_read_data,     // uart -> cpu
 input   [31:0] uart_write_data,    // cpu -> uart
-input   [31:0] uart_addr,          // cpu -> uart
+input   [63:0] uart_addr,          // cpu -> uart
 input          uart_wen
 );
 

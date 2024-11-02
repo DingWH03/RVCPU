@@ -1,7 +1,9 @@
 `timescale 1ns / 1ns
 module RVCPU(
 input clk,
-input rst
+input rst,
+input uart_rxd, // uart 接收端
+output uart_txd // uart 发送端
 );
 
 // ------------sys_bus连接到rom和dram----------------------------
@@ -13,6 +15,18 @@ wire [63:0] dm_addr_mem;
 wire [63:0] dm_din_mem;
 wire [63:0] dm_dout_mem;
 // ----------------------------------------------------------------
+
+// ------------sys_bus连接到uart-------------------------------
+wire [63:0] uart_addr;
+wire [31:0] uart_write_data, uart_read_data;
+wire uart_wen;
+// ---------------------------------------------------------
+
+// ------------sys_bus连接到gpio-------------------------------
+wire [63:0] gpio_addr;
+wire [63:0] gpio_data_in, gpio_dout;
+wire [2:0] gpio_rd_ctrl, gpio_wr_ctrl;
+// ---------------------------------------------------------
 
 // ------------id阶段与寄存器堆的连接信号----------------------
 wire [63:0] data_reg_read_1, data_reg_read_2; // 寄存器堆返回的数据信号
@@ -88,6 +102,55 @@ rom rom0(
     .im_dout(im_dout_mem0)
 );
 
+// 初始化GPIO实例
+// module gpio(
+//     input               clk,
+//     input               rst,
+//     input   [63:0]      addr,        // GPIO地址
+//     input   [2:0]       rd_ctrl,     // 读取控制信号
+//     input   [2:0]       wr_ctrl,     // 写入控制信号
+//     input   [63:0]      data_in,     // 写入数据
+//     output reg [63:0]   data_out,    // 读取数据
+//     output reg          valid        // 数据有效信号
+// );
+
+gpio gpio0(
+    .clk(clk),
+    .rst(rst),
+    .addr(gpio_addr),
+    .rd_ctrl(gpio_rd_ctrl),
+    .wr_ctrl(gpio_wr_ctrl),
+    .data_in(gpio_data_in),
+    .data_out(gpio_dout),
+    .valid()
+);
+
+// uart模块初始化
+// module uart_top (
+// input               clk     , // Top level system clock input.
+// input               rst_n    , // reset_n .
+// input   wire        uart_rxd, // UART Recieve pin.
+// output  wire        uart_txd, // UART transmit pin.
+// output  wire [7:0]  led,
+
+// output  [31:0] uart_read_data,     // uart -> cpu
+// input   [31:0] uart_write_data,    // cpu -> uart
+// input   [31:0] uart_addr,          // cpu -> uart
+// input          uart_wen
+// );
+uart_top uart0(
+    .clk(clk),
+    .rst_n(!rst),
+    .uart_rxd(uart_rxd),
+    .uart_txd(uart_txd),
+    .led(),
+    .uart_read_data(uart_read_data),
+    .uart_write_data(uart_write_data),
+    .uart_addr(uart_addr),
+    .uart_wen(uart_wen)
+);
+
+
 // // 顶层总线模块
 // module system_bus(
 //     input               clk,
@@ -110,7 +173,12 @@ rom rom0(
 //     output [63:0] gpio_addr,
 //     output [63:0] gpio_data_in,
 //     input [63:0] gpio_dout,
-//     output [2:0] gpio_wr_ctrl
+//     output [2:0] gpio_wr_ctrl,
+//     // 连接uart
+//     output [63:0] uart_addr,
+//     output [31:0] uart_write_data,
+//     input [31:0] uart_read_data,
+//     output uart_wen
 // );
 system_bus bus0(
     .clk(clk),
@@ -127,10 +195,15 @@ system_bus bus0(
     .dram_dout(dm_dout_mem),
     .rom_addr(im_addr_mem0),
     .rom_dout(im_dout_mem0),
-    .gpio_addr(),
-    .gpio_data_in(),
-    .gpio_dout(),
-    .gpio_wr_ctrl()
+    .gpio_addr(gpio_addr),
+    .gpio_data_in(gpio_data_in),
+    .gpio_dout(gpio_dout),
+    .gpio_wr_ctrl(gpio_wr_ctrl),
+    .gpio_rd_ctrl(gpio_rd_ctrl),
+    .uart_addr(uart_addr),
+    .uart_write_data(uart_write_data),
+    .uart_read_data(uart_read_data),
+    .uart_wen(uart_wen)
 );
 
 // 顶层模块初始化寄存器堆
