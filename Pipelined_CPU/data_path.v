@@ -88,6 +88,56 @@ assign bus_addr = memorying?dm_addr_mem:im_addr_mem0;
 wire [63:0] dm_addr_mem;
 // -----------------------------------------------------------
 
+// ----------------hazard模块信号定义----------------------------
+wire pcFromTaken;
+wire IF_ID_stall;
+wire ID_EX_stall;
+wire ID_EX_flush;
+wire EX_MEM_flush;
+wire IF_ID_flush;
+// ------------------------------------------------------------
+
+// 控制冒险与数据冒险模块
+// module hazard (
+//   input  [4:0]  rs1,
+//   input  [4:0]  rs2,
+//   input         alu_result_0,
+//   input  [1:0]  id_ex_jump,
+//   input         id_ex_branch,
+//   input         id_ex_imm_31,
+//   input         id_ex_memRead,
+//   input         id_ex_memWrite,
+//   input  [4:0]  id_ex_rd,
+//   input  [1:0]  ex_mem_maskMode,
+//   input         ex_mem_memWrite,
+
+//   output reg    pcFromTaken,
+//   output reg    IF_ID_stall,
+//   output reg    ID_EX_stall,
+//   output reg    ID_EX_flush,
+//   output reg    EX_MEM_flush,
+//   output reg    IF_ID_flush
+// );
+hazard hazard0(
+    .rs1(addr_reg_read_1),                  // 连接ID阶段的源寄存器1
+    .rs2(addr_reg_read_2),                  // 连接ID阶段的源寄存器2
+    .alu_result_0(alu_result_EX[0]), // 连接EX阶段的ALU结果最低位
+    .id_ex_jump(2'b00),            // 需要根据EX阶段的跳转信号设置
+    .id_ex_branch(is_branch),      // 连接ID阶段的分支信号
+    .id_ex_imm_31(imm_ID[63]),     // 立即数的31位
+    .id_ex_memRead(dm_rd_ctrl_ID[0]),  // MEM读控制信号的某一位
+    .id_ex_memWrite(dm_wr_ctrl_ID[0]), // MEM写控制信号的某一位
+    .id_ex_rd(rd_ID),              // ID阶段的目的寄存器地址
+    .ex_mem_maskMode(dm_wr_ctrl_ID), // 从EX阶段传入的控制信号
+    .ex_mem_memWrite(dm_wr_ctrl_EX[1]), // MEM写控制信号
+    .pcFromTaken(pcFromTaken),     // 流水线控制信号
+    .IF_ID_stall(IF_ID_stall),     // 暂停信号
+    .ID_EX_stall(ID_EX_stall),     // ID阶段暂停信号
+    .ID_EX_flush(ID_EX_flush),     // ID阶段冲刷信号
+    .EX_MEM_flush(EX_MEM_flush),   // MEM阶段冲刷信号
+    .IF_ID_flush(IF_ID_flush)      // IF阶段冲刷信号
+);
+
 // stage1
 // module pipeline_if_stage (
 //     input wire clk,              // 时钟信号
