@@ -12,8 +12,8 @@ module pipeline_mem_stage (
     input wire [63:0] reg_data2_EX,     // 从EX阶段传递的源寄存器2的值 (用于存储数据)
     input wire [4:0] rd_EX,             // 从EX阶段传递的目的寄存器地址
     input wire [63:0] pc_MEM,           // 从EX阶段传递的PC值
-    input wire [2:0] dm_rd_ctrl_id,     // 内存读控制信号
-    input wire [2:0] dm_wr_ctrl_id,     // 内存写控制信号
+    input wire [2:0] dm_rd_ctrl_EX,     // 内存读控制信号
+    input wire [2:0] dm_wr_ctrl_EX,     // 内存写控制信号
     input wire rf_wr_en_EX,             // id阶段传来的寄存器写使能信号
     input wire [1:0] rf_wr_sel_EX,         // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
 
@@ -70,12 +70,12 @@ module pipeline_mem_stage (
             // 内存访问信号
             dm_addr <= alu_result_EX;         // 地址由ALU结果提供
             dm_din <= reg_data2_EX;           // 写入的数据来自寄存器堆中的第二个源寄存器
-            dm_rd_ctrl <= dm_rd_ctrl_id;      // 直接传递内存读控制信号
-            dm_wr_ctrl <= dm_wr_ctrl_id;      // 直接传递内存写控制信号
+            dm_rd_ctrl <= dm_rd_ctrl_EX;      // 直接传递内存读控制信号
+            dm_wr_ctrl <= dm_wr_ctrl_EX;      // 直接传递内存写控制信号
             pc_WB <= pc_MEM;
             rf_wr_en_MEM <= rf_wr_en_EX;
             rf_wr_sel_MEM <= rf_wr_sel_EX;
-            memorying <= dm_rd_ctrl_id || dm_wr_ctrl_id;
+            memorying <= dm_rd_ctrl_EX || dm_wr_ctrl_EX;
         end
     end
 

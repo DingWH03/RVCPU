@@ -11,6 +11,12 @@ module pipeline_id_stage (
     input wire [31:0] instruction_IF, // 从IF阶段传来的指令
     input wire [63:0] pc_IF,          // 从IF阶段传来的PC值
 
+    // 接入数据前推forwarding模块
+    input wire [63:0] forward_rs1_data, // 前递寄存器1数据
+    input wire [63:0] forward_rs2_data, // 前递寄存器2数据
+    input wire forward_rs1_sel, // 前递寄存器1数据选择信号
+    input wire forward_rs2_sel,  // 前递寄存器2数据选择信号
+
     input wire [63:0] data_reg_read_1, data_reg_read_2, // 从寄存器堆读取的数据
     
     output [63:0] reg_data1_ID,  // 解码出的源操作数1
@@ -39,8 +45,8 @@ module pipeline_id_stage (
 
     reg [31:0] instruction_ID;
 
-    assign reg_data1_ID   = data_reg_read_1;
-    assign reg_data2_ID   = data_reg_read_2;
+    assign reg_data1_ID   = forward_rs1_sel ? forward_rs1_data : data_reg_read_1;
+    assign reg_data2_ID   = forward_rs2_sel ? forward_rs2_data : data_reg_read_2;
 
     
 

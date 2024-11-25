@@ -58,13 +58,6 @@ wire [4:0] rs2_EX;
 wire [4:0] rd_EX;
 // --------------------------------------------------------------
 
-// --------------与hazard模块的连线-----------------------
-wire branch_taken_EX;
-wire [63:0] branch_target_EX;
-wire branch_taken_IF;
-wire [63:0] branch_target_IF;
-wire flush_ID;
-// --------------------------------------------------------------
 
 // ----------------id阶段的输出接入到ex阶段----------------------
 wire alu_a_sel_ID;
@@ -89,14 +82,21 @@ assign bus_addr = memorying?dm_addr_mem:im_addr_mem0;
 wire [63:0] dm_addr_mem;
 // -----------------------------------------------------------
 
-// ----------------hazard模块信号定义----------------------------
-wire pcFromTaken;
-wire IF_ID_stall;
-wire ID_EX_stall;
-wire ID_EX_flush;
-wire EX_MEM_flush;
-wire IF_ID_flush;
-// ------------------------------------------------------------
+
+// --------------与hazard模块的连线-----------------------
+wire branch_taken_EX;
+wire [63:0] branch_target_EX;
+wire branch_taken_IF;
+wire [63:0] branch_target_IF;
+wire flush_ID;
+// --------------------------------------------------------------
+
+// --------------与forwarding模块的连线-----------------------
+wire [63:0] forward_rs1_data;
+wire [63:0] forward_rs2_data;
+wire forward_rs1_sel;
+wire forward_rs2_sel;
+// --------------------------------------------------------------
 
 // 控制冒险模块
 // module hazard (
@@ -112,6 +112,46 @@ hazard hazard0(
     .flush_ID(flush_ID),
     .branch_taken_IF(branch_taken_IF),
     .branch_target_IF(branch_target_IF)
+);
+
+// 数据前递模块
+// module forwarding (
+//     input [4:0] addr_reg_read_1_IF, // ID阶段寄存器读取地址1
+//     input [4:0] addr_reg_read_2_IF, // ID阶段寄存器读取地址2
+
+//     input [4:0] rd_ID, // EX阶段目标寄存器地址
+//     input rf_wr_en_ID,  // EX阶段寄存器写使能信号
+//     input [63:0] alu_result_EX, // EX阶段ALU结果
+
+//     input [4:0] rd_EX, // MEM阶段目标寄存器地址
+//     input [3:0] dm_rd_ctrl_EX, // MEM阶段内存读控制信号
+//     input [63:0] mem_data_MEM, // MEM阶段内存数据
+
+//     input [4:0] rd_MEM, // WB阶段目标寄存器地址
+//     input reg_write_MEM, // WB阶段寄存器写使能信号
+//     input [63:0] write_data_WB, // WB阶段写入数据
+
+//     output reg [63:0] forward_rs1_data, // 前递寄存器1数据
+//     output reg [63:0] forward_rs2_data, // 前递寄存器2数据
+//     output reg forward_rs1_sel, // 前递寄存器1数据选择信号
+//     output reg forward_rs2_sel  // 前递寄存器2数据选择信号
+// );
+forwarding forwarding0(
+    .addr_reg_read_1_IF(instruction_IF[19:15]),
+    .addr_reg_read_2_IF(instruction_IF[24:20]),
+    .rd_ID(rd_ID),
+    .rf_wr_en_ID(rf_wr_en_ID),
+    .alu_result_EX(alu_result_EX),
+    .rd_EX(rd_EX),
+    .dm_rd_ctrl_EX(dm_rd_ctrl_EX),
+    .mem_data_MEM(mem_data_MEM),
+    .rd_MEM(rd_MEM),
+    .reg_write_MEM(rf_wr_en_MEM),
+    .write_data_WB(write_data_WB),
+    .forward_rs1_data(forward_rs1_data),
+    .forward_rs2_data(forward_rs2_data),
+    .forward_rs1_sel(forward_rs1_sel),
+    .forward_rs2_sel(forward_rs2_sel)
 );
 
 // stage1
@@ -204,7 +244,11 @@ pipeline_id_stage stage2(
     .dm_rd_ctrl(dm_rd_ctrl_ID),  // 新增信号
     .dm_wr_ctrl(dm_wr_ctrl_ID),  // 新增信号
     .addr_reg_read_1(addr_reg_read_1),
-    .addr_reg_read_2(addr_reg_read_2)
+    .addr_reg_read_2(addr_reg_read_2),
+    .forward_rs1_sel(forward_rs1_sel),
+    .forward_rs2_sel(forward_rs2_sel),
+    .forward_rs1_data(forward_rs1_data),
+    .forward_rs2_data(forward_rs2_data)
 );
 
 
@@ -251,12 +295,12 @@ pipeline_ex_stage stage3(
     .clk(clk),
     .reset(rst),
     .stall(1'b0),
-    .reg_data1_EX(reg_data1_ID),
-    .reg_data2_EX(reg_data2_ID),
-    .imm_EX(imm_ID),
-    .rd_EX(rd_ID),
+    .reg_data1_ID(reg_data1_ID),
+    .reg_data2_ID(reg_data2_ID),
+    .imm_ID(imm_ID),
+    .rd_ID(rd_ID),
     // .opcode_EX(opcode_ID),
-    .pc_EX(pc_id_to_ex),
+    .pc_ID(pc_id_to_ex),
     .rf_wr_en_ID(rf_wr_en_ID),             // 传递寄存器写使能信号
     .rf_wr_sel_ID(rf_wr_sel),
     .alu_ctrl(alu_ctrl_ID),
@@ -267,7 +311,7 @@ pipeline_ex_stage stage3(
     .do_jump(do_jump),
     .is_branch(is_branch),
     .BrType(BrType),
-    .pc_MEM(pc_ex_to_mem),
+    .pc_EX(pc_ex_to_mem),
     .rf_wr_en_EX(rf_wr_en_EX),             // 传递寄存器写使能信号
     .rf_wr_sel_EX(rf_wr_sel_EX),
     .alu_result_EX(alu_result_EX),
@@ -275,8 +319,8 @@ pipeline_ex_stage stage3(
     .branch_target_EX(branch_target_EX),
     .dm_rd_ctrl_EX(dm_rd_ctrl_EX),  // 新增信号传递
     .dm_wr_ctrl_EX(dm_wr_ctrl_EX),   // 新增信号传递
-    .reg_data2_MEM(reg_data2_EX),
-    .rd_MEM(rd_EX)
+    .reg_data2_EX(reg_data2_EX),
+    .rd_EX(rd_EX)
 );
 
 
@@ -322,8 +366,8 @@ pipeline_mem_stage stage4(
     .pc_MEM(pc_ex_to_mem),
     .rf_wr_en_EX(rf_wr_en_EX),
     .rf_wr_sel_EX(rf_wr_sel_EX),
-    .dm_rd_ctrl_id(dm_rd_ctrl_EX),  // 修改为从EX阶段传入
-    .dm_wr_ctrl_id(dm_wr_ctrl_EX),  // 修改为从EX阶段传入
+    .dm_rd_ctrl_EX(dm_rd_ctrl_EX),  // 修改为从EX阶段传入
+    .dm_wr_ctrl_EX(dm_wr_ctrl_EX),  // 修改为从EX阶段传入
     .dm_addr(dm_addr_mem),
     .dm_din(bus_din),
     .dm_dout(bus_dout),
