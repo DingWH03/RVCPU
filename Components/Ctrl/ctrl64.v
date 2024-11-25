@@ -13,6 +13,8 @@ output reg    [2:0]   dm_rd_ctrl,
 output reg    [2:0]   dm_wr_ctrl,
 output                is_debug,
 output                is_syscall,
+output wire    is_rs1_used,
+output wire    is_rs2_used, // 新加入信号
 input   wire    [6:0]   opcode,
 input   wire    [2:0]   funct3,
 input   wire    [6:0]   funct7
@@ -117,6 +119,9 @@ assign  is_srl  = (opcode == 7'h33) && (funct3 ==3'h5) && (funct7 == 7'h00);
 assign  is_sra  = (opcode == 7'h33) && (funct3 ==3'h5) && (funct7 == 7'h20);
 assign  is_or   = (opcode == 7'h33) && (funct3 ==3'h6) && (funct7 == 7'h00);
 assign  is_and  = (opcode == 7'h33) && (funct3 ==3'h7) && (funct7 == 7'h00);
+
+assign is_rs1_used = is_r_type | is_i_type | is_b_type | is_s_type;
+assign is_rs2_used = is_r_type | is_b_type | is_s_type;
 
 assign  is_add_type = is_auipc | is_jal | is_jalr | is_b_type | is_s_type 
                     | is_lb | is_lh | is_lw | is_lbu | is_lhu | is_add | is_addi ;
