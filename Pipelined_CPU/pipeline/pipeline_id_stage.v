@@ -42,11 +42,10 @@ module pipeline_id_stage (
 
     output reg [4:0] addr_reg_read_1, addr_reg_read_2 // 连接源寄存器堆地址
 );
-    wire is_rs1_used, is_rs2_used;
     reg [31:0] instruction_ID;
 
-    assign reg_data1_ID   = (forward_rs1_sel&is_rs1_used) ? forward_rs1_data : data_reg_read_1;
-    assign reg_data2_ID   = (forward_rs2_sel&is_rs2_used) ? forward_rs2_data : data_reg_read_2;
+    assign reg_data1_ID   = (forward_rs1_sel) ? forward_rs1_data : data_reg_read_1;
+    assign reg_data2_ID   = (forward_rs2_sel) ? forward_rs2_data : data_reg_read_2;
 
     
 
@@ -76,8 +75,6 @@ module pipeline_id_stage (
         .alu_ctrl(alu_ctrl_wire),
         .dm_rd_ctrl(dm_rd_ctrl_wire),
         .dm_wr_ctrl(dm_wr_ctrl_wire),
-        .is_rs1_used(is_rs1_used),
-        .is_rs2_used(is_rs2_used),
         .opcode(instruction_IF[6:0]),
         .funct3(instruction_IF[14:12]),
         .funct7(instruction_IF[31:25])

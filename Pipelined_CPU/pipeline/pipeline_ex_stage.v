@@ -71,7 +71,7 @@ module pipeline_ex_stage (
             branch_taken_EX <= 1'b0;  // 默认不跳转
             branch_target_EX <= 64'b0;
 
-            if (is_branch) begin  // 如果是分支指令
+            if (is_branch|do_jump) begin  // 如果是分支指令
                 branch_taken_EX <= JUMP;  // 通过 branch 模块判断是否跳转
                 if (JUMP) begin
                     branch_target_EX <= pc_ID + imm_ID;  // 跳转目标地址
