@@ -89,6 +89,7 @@ wire [63:0] branch_target_EX;
 wire branch_taken_IF;
 wire [63:0] branch_target_IF;
 wire flush_ID;
+wire flush_EX;
 // --------------------------------------------------------------
 
 // --------------与forwarding模块的连线-----------------------
@@ -110,6 +111,7 @@ hazard hazard0(
     .branch_taken_EX(branch_taken_EX),
     .branch_target_EX(branch_target_EX),
     .flush_ID(flush_ID),
+    .flush_EX(flush_EX),
     .branch_taken_IF(branch_taken_IF),
     .branch_target_IF(branch_target_IF)
 );
@@ -299,6 +301,7 @@ pipeline_ex_stage stage3(
     .clk(clk),
     .reset(rst),
     .stall(1'b0),
+    .flush(flush_EX),
     .reg_data1_ID(reg_data1_ID),
     .reg_data2_ID(reg_data2_ID),
     .imm_ID(imm_ID),

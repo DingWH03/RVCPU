@@ -6,6 +6,7 @@
 module pipeline_ex_stage (
     input wire clk,                  // 时钟信号
     input wire reset,                // 复位信号，低电平有效
+    input wire flush,
     input wire stall,            // 流水线暂停信号
     input wire [63:0] reg_data1_ID,  // 从ID阶段传递的源操作数1
     input wire [63:0] reg_data2_ID,  // 从ID阶段传递的源操作数2
@@ -64,7 +65,7 @@ module pipeline_ex_stage (
 
     // 分支跳转逻辑 (组合逻辑?)
     always @(posedge clk or negedge reset) begin
-        if (reset) begin
+        if (reset||flush) begin
             branch_taken_EX <= 1'b0;
             branch_target_EX <= 64'b0;
         end else if (~stall) begin
@@ -90,7 +91,7 @@ module pipeline_ex_stage (
 
     // ALU计算结果的时序逻辑 和其他信号
     always @(posedge clk or negedge reset) begin
-        if (reset) begin
+        if (reset||flush) begin
             alu_result_EX <= 64'b0;
             pc_EX <= 0;
             dm_rd_ctrl_EX <= 0;

@@ -154,10 +154,10 @@ assign is_syscall = is_ecall;
 assign is_debug = is_ebreak;
   
 //do_jump
-assign do_jump      =  is_jalr | is_jal | is_b_type ;
+assign do_jump      =  is_jalr | is_jal;
 
 // is_branch
-assign is_branch = (inst[6:0] == 7'b1100011); // 仅当opcode表示分支指令时is_branch为1
+assign is_branch = is_b_type; 
   
 //[2:0]BrType
 always@(*)

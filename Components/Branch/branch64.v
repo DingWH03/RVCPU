@@ -15,8 +15,8 @@ assign signed_REG2 = REG2;
 
 always @(*) begin
     case (Type)
-        // 3'b000: BEQ (Branch if Equal)
-        3'b000: BrE = (signed_REG1 == signed_REG2) ? 1 : 0;
+        // 3'b010: BEQ (Branch if Equal)
+        3'b010: BrE = (signed_REG1 == signed_REG2) ? 1 : 0;
 
         // 3'b001: BNE (Branch if Not Equal)
         3'b001: BrE = (signed_REG1 != signed_REG2) ? 1 : 0;
