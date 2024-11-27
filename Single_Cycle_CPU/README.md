@@ -1,78 +1,66 @@
-# Single-Cycle RV64I CPU
+# 单周期 RV64I CPU
 
-This repository contains the design of a single-cycle RISC-V 64-bit (RV64I) CPU written in Verilog. This CPU supports basic instruction execution, memory handling, debugging, and basic control flow for single-cycle operation.
+此仓库包含了一个用 Verilog 编写的单周期 RISC-V 64 位 (RV64I) CPU 设计。该 CPU 支持基本指令执行、内存管理、调试功能和单周期操作的基本控制流。
 
-## Table of Contents
+## 目录
 
-- [Overview](#overview)
-- [Components](#components)
-- [Top Module](#top-module)
-- [Debugging](#debugging)
-- [Memory Management](#memory-management)
-- [How to Use](#how-to-use)
-- [License](#license)
+- [概述](#概述)
+- [组件](#组件)
+- [顶层模块](#顶层模块)
+- [调试功能](#调试功能)
+- [内存管理](#内存管理)
 
-## Overview
+## 概述
 
-This project implements a basic RV64I single-cycle CPU with a pause-and-continue debugging feature, connected memory controllers for RAM and ROM, and an Arithmetic Logic Unit (ALU). The CPU reads instructions from the ROM, executes them, and interfaces with memory using a custom memory controller.
+本项目实现了一个基本的 RV64I 单周期 CPU，具有暂停和继续调试功能，连接了用于 RAM 和 ROM 的内存控制器，并且包含了算术逻辑单元（ALU）。CPU 从 ROM 中读取指令，执行指令，并通过自定义内存控制器与内存交互。
 
-## Components
+## 组件
 
-The CPU includes the following main components:
+该 CPU 包含以下主要组件：
 
-1. **Program Counter (PC)**: Manages the address of the next instruction.
-2. **Instruction Memory (ROM)**: Stores program instructions.
-3. **Register File**: Contains 64-bit general-purpose registers for data storage.
-4. **ALU (Arithmetic Logic Unit)**: Performs arithmetic and logic operations.
-5. **Memory Controller (DRAM Controller)**: Manages data access to and from DRAM.
-6. **Immediate Generator**: Generates immediate values for certain instruction types.
-7. **Control Unit**: Decodes instructions, generates control signals, and determines execution flow.
-8. **Branch Logic**: Determines conditional branch outcomes.
+1. **程序计数器（PC）**：管理下一条指令的地址。
+2. **指令内存（ROM）**：存储程序指令。
+3. **寄存器堆**：包含用于数据存储的 64 位通用寄存器。
+4. **算术逻辑单元（ALU）**：执行算术和逻辑运算。
+5. **内存控制器（DRAM 控制器）**：管理数据的读写操作。
+6. **立即数生成器**：为特定类型的指令生成立即数。
+7. **控制单元**：解码指令、生成控制信号并确定执行流。
+8. **分支逻辑**：确定条件分支的结果。
 
-## Top Module
+## 顶层模块
 
-The top module `RVCPU` contains all the necessary input and output ports:
+顶层模块 `RVCPU` 包含所有必要的输入输出端口：
 
-- `clk` (input): The clock signal for timing.
-- `rst` (input): Resets the CPU state.
-- `continue_key` (input): A debug key for controlling pause and continue functionality.
-- `led` (output): Displays the current ALU output on LEDs.
-- `led_addr` (output): Displays the current instruction address.
+- `clk`（输入）：时钟信号，用于控制时序。
+- `rst`（输入）：重置 CPU 状态。
+- `continue_key`（输入）：调试用的按键，用于控制暂停和继续功能。
+- `led`（输出）：显示当前 ALU 输出至 LED。
+- `led_addr`（输出）：显示当前指令地址。
 
-### Signals in the Top Module
+### 顶层模块中的信号
 
-- **`im_addr`**: Instruction memory address, linked to the program counter.
-- **`inst`**: Current instruction to be executed.
-- **`dm_addr` and `dm_din`**: Data memory address and data input for memory write operations.
-- **`cpu_paused`**: Indicates if the CPU is in a paused state during debugging.
+- **`im_addr`**：指令内存地址，与程序计数器连接。
+- **`inst`**：当前待执行的指令。
+- **`dm_addr` 和 `dm_din`**：数据内存地址和数据输入，用于内存写操作。
+- **`cpu_paused`**：指示 CPU 是否处于调试暂停状态。
 
-## Debugging
+## 调试功能
 
-This CPU includes a debugging feature that pauses execution on specific conditions. When `is_debug` is active:
+该 CPU 检测到`ebreak`指令之后暂停执行。当 `is_debug` 激活时：
 
-- `continue_key` can toggle the `cpu_paused` state.
-- Pressing `continue_key` enables the CPU to resume and execute the next instruction.
+- `continue_key` 可以切换 `cpu_paused` 状态。
+- 按下 `continue_key` 可使 CPU 恢复并执行下一条指令。
 
-## Memory Management
+## 内存管理
 
-The CPU interacts with memory via the `dram_ctrl` memory controller, which interfaces with the `dram` and `rom` modules:
+CPU 通过 `dram_ctrl` 内存控制器与内存交互，该控制器与 `dram` 和 `rom` 模块进行接口：
 
-- **DRAM**: Serves as main memory.
-- **ROM**: Contains the instruction set for execution.
+- **DRAM**：作为主内存使用。
+- **ROM**：包含执行所需的指令集。
 
-### Memory Connections
+### 内存连接
 
-- **`dm_din`** and **`dm_dout`**: Handle data inputs and outputs.
-- **`addr_dram_ctrl`**: Memory address for DRAM access.
-- **`write_en`**: Enables memory write operations.
+- **`dm_din`** 和 **`dm_dout`**：处理数据的输入和输出。
+- **`addr_dram_ctrl`**：DRAM 访问的内存地址。
+- **`write_en`**：使能内存写操作。
 
-## How to Use
-
-1. **Clone the repository** and open the project in a Verilog-compatible development environment.
-2. **Load the required instruction set** into the ROM module.
-3. **Run the simulation** and monitor `led` and `led_addr` outputs to observe the current ALU output and instruction addresses.
-4. **Use `continue_key`** to manually step through instructions in debug mode.
-
-## License
-
-This project is licensed under the GPL-3.0 License.

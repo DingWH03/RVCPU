@@ -1,61 +1,68 @@
 # RVCPU_DEMO
 
-## Introduction
+## 目录
 
-This project is a demo of a RISC-V CPU, implementing core functionality and supporting various features typical to RISC-V processors.
+- [简介](#简介)
+- [功能](#功能)
+- [运行代码](#运行代码)
+- [指令集](#指令集)
+- [许可证](#许可证)
 
-## Features
+## 简介
 
-### Completed
+该项目是 RISC-V CPU 的DEMO，实现了核心功能并支持 RISC-V 处理器的一些典型功能。
 
-- [x] Basic ALU operations (ADD, SUB, AND, OR, XOR)
-- [x] Instruction Fetch, Decode, Execute, Memory, and Write Back stages
-- [x] Immediate value generation and handling
-- [x] Register file read and write operations
-- [x] Load and store operations (LW, SW)
-- [x] Jump and branch handling (JAL, BEQ, BNE)
-- [x] System bus including ROM, DRAM and peripherals
+这个文件是项目的指令集介绍以及基本实现情况，更多介绍与实现细节在[单周期CPU](Single_Cycle_CPU/README.md)、[多周期流水线CPU](Pipelined_CPU/README.md)中进行介绍。
 
-### In Progress
+## 功能
 
-- [ ] Uart
-- [ ] GPIOs linked to leds
-- [ ] Control unit for pipeline handling and hazard detection
-- [ ] Support for additional RISC-V instructions (e.g., multiplication and division)
-- [ ] Full forwarding and hazard resolution for all instructions
-- [ ] Cache implementation for instruction and data memory
-- [ ] Exception and Interrupt Handling
+### 已完成
 
-### Planned Features
+- [x] 基本 ALU 操作（ADD、SUB、AND、OR、XOR）
+- [x] 指令获取、解码、执行、内存和写回阶段
+- [x] 立即数生成和处理
+- [x] 寄存器文件读写操作
+- [x] 加载和存储操作（LW、SW）
+- [x] 跳转和分支处理（JAL、BEQ、BNE）
+- [x] 系统总线，包括 ROM、DRAM 和外设
+- [x] 用于流水线设计和冒险检测的控制单元
+- [x] 所有 RV64I 指令的数据前递和控制冒险与结构冒险
 
-- [ ] CSR (Control and Status Registers) support
-- [ ] Interrupt and exception handling
-- [ ] Full compliance with the RISC-V privileged specification
+### 正在进行中
 
-## Getting Started
+- [ ] Uart串口通信
+- [ ] 链接到 led 的 GPIO
+- [ ] 支持其他 RISC-V 指令（例如乘法和除法）
+- [ ] 指令和数据内存的缓存实现
+- [ ] 异常和中断处理
 
-### Installation
+### 计划实现功能
 
-Using iverilog to simulate currently.
+- [ ] CSR（控制和状态寄存器）支持
+- [ ] 完全符合 RISC-V 特权规范
+
+## 运行代码
+
+### 安装
+
+目前使用 iverilog 进行模拟。
 
 ```bash
-sudo apt install make iverilog gtkwave # For debian/ubuntu
+sudo apt install make iverilog gtkwave # 对于 debian/ubuntu
 ```
 
-### Run
+### 运行
 
 ```bash
-make # compile
-make run # contribute to waveform.vcd
+make # 编译
+make run # 生成output/waveform.vcd文件
 ```
 
-### Contributing
+然后你可以使用 gtkwave 观看波形。
 
-Contributions are welcome! Please submit issues or pull requests for any bugs or suggested enhancements.
+## 指令集
 
-## Instrustion Set
-
-RISC-V 64 with instruction of 32 bit
+设计为64位RISC-V架构CPU，但目前仅支持32位长度的RV64I指令集。
 
 ### RV64I
 
@@ -150,3 +157,7 @@ RISC-V 指令集架构 (ISA) 中，RV64I 是基本整数指令集的 64 位扩�
 | 指令名  | 描述                     | 格式     |
 |---------|--------------------------|----------|
 | `JAL`   | 无条件跳转并链接         | J-type   |
+
+## 许可证
+
+本项目采用 GPL-3.0 许可证。
