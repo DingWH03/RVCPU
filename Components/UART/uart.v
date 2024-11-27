@@ -12,9 +12,10 @@ input          uart_wen
 );
 
 // Clock frequency in hertz.
-parameter CLK_HZ = 10_000000;
-parameter BIT_RATE =   9600;
-parameter PAYLOAD_BITS = 8;
+parameter CLK_HZ = 100_000000; // 100 MHz
+parameter BIT_RATE = 9600;     // 波特率 9600 bps
+parameter PAYLOAD_BITS = 8;    // 数据位宽 8 位
+
 
 wire [PAYLOAD_BITS-1:0]  uart_rx_data;
 wire        		     uart_rx_valid;
