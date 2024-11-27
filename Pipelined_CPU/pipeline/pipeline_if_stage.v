@@ -1,3 +1,7 @@
+// 文件名: pipeline_if_stage.v
+// 功能: 5级流水线CPU中的指令预取阶段 (Instruction Fetch Stage)
+// mem: yes
+// regs: no
 module pipeline_if_stage (
     input wire clk,               // 时钟信号
     input wire reset,             // 复位信号，低电平有效

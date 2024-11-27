@@ -27,4 +27,9 @@ end
 assign RD1 = (A1 == 5'b00000) ? 64'b0 : reg_file[A1];  // 如果读取的是x0，输出0
 assign RD2 = (A2 == 5'b00000) ? 64'b0 : reg_file[A2];  // 如果读取的是x0，输出0
 
+wire [63:0] x12;
+wire [63:0] x30;
+assign x12 = reg_file[12];
+assign x30 = reg_file[30];
+
 endmodule

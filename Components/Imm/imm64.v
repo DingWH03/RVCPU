@@ -15,10 +15,12 @@ begin
     case(opcode)
         // AUIPC 和 LUI 类型指令：立即数位于[31:12]，需要扩展到64位
         7'b0010111: begin  // AUIPC
+            out[11:0] = 12'b0;   
             out[31:12] = inst[31:12];
             out[63:32] = {32{out[31]}};  // 符号扩展
         end
         7'b0110111: begin  // LUI
+            out[11:0] = 12'b0;   
             out[31:12] = inst[31:12];
             out[63:32] = 32'b0;  // 无符号扩展，LUI指令的高位扩展为0
         end

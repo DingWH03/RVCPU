@@ -63,4 +63,3 @@ CPU 通过 `dram_ctrl` 内存控制器与内存交互，该控制器与 `dram` �
 - **`dm_din`** 和 **`dm_dout`**：处理数据的输入和输出。
 - **`addr_dram_ctrl`**：DRAM 访问的内存地址。
 - **`write_en`**：使能内存写操作。
-

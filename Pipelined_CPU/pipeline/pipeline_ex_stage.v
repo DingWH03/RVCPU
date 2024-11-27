@@ -63,9 +63,10 @@ module pipeline_ex_stage (
         .BrE(BrE)
     );
 
+    // 在下面出现了问题，branch_taken_EX信号实际上跟自己的flush信号相连，如果此时是一个跳转信号被暂停了，会直接被冲刷掉，所以考虑改为(flush&&~stall)去除暂停时冲刷使if读取不到跳转信号
     // 分支跳转逻辑 (组合逻辑?)
     always @(posedge clk or negedge reset) begin
-        if (reset||flush) begin
+        if (reset||(flush&&~stall)) begin
             branch_taken_EX <= 1'b0;
             branch_target_EX <= 64'b0;
         end else if (~stall) begin
