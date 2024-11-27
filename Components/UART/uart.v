@@ -12,7 +12,7 @@ input          uart_wen
 );
 
 // Clock frequency in hertz.
-parameter CLK_HZ = 100_000000; // 100 MHz
+parameter CLK_HZ = 100_000_000; // 100 MHz
 parameter BIT_RATE = 9600;     // 波特率 9600 bps
 parameter PAYLOAD_BITS = 8;    // 数据位宽 8 位
 
