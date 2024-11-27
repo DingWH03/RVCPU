@@ -90,6 +90,9 @@ wire branch_taken_IF;
 wire [63:0] branch_target_IF;
 wire flush_ID;
 wire flush_EX;
+wire stall_IF;
+wire stall_ID;
+wire stall_EX;
 // --------------------------------------------------------------
 
 // --------------与forwarding模块的连线-----------------------
@@ -110,6 +113,10 @@ wire forward_rs2_sel;
 hazard hazard0(
     .branch_taken_EX(branch_taken_EX),
     .branch_target_EX(branch_target_EX),
+    .memorying_MEM(memorying),
+    .stall_IF(stall_IF),
+    .stall_ID(stall_ID),
+    .stall_EX(stall_EX),
     .flush_ID(flush_ID),
     .flush_EX(flush_EX),
     .branch_taken_IF(branch_taken_IF),
@@ -178,7 +185,7 @@ forwarding forwarding0(
 pipeline_if_stage stage1(
     .clk(clk),
     .reset(rst),
-    .stall(memorying),
+    .stall(stall_IF),
     .branch_taken(branch_taken_IF),
     .branch_target(branch_target_IF),
     .im_dout(bus_dout[31:0]),
@@ -229,7 +236,7 @@ pipeline_id_stage stage2(
     .clk(clk),
     .reset(rst),
     .flush(flush_ID),
-    .stall(1'b0),
+    .stall(stall_ID),
     .instruction_IF(instruction_IF),
     .pc_IF(pc_if_to_id),
     .data_reg_read_1(data_reg_read_1),
@@ -300,7 +307,7 @@ pipeline_id_stage stage2(
 pipeline_ex_stage stage3(
     .clk(clk),
     .reset(rst),
-    .stall(1'b0),
+    .stall(stall_EX),
     .flush(flush_EX),
     .reg_data1_ID(reg_data1_ID),
     .reg_data2_ID(reg_data2_ID),
