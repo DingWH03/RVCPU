@@ -6,6 +6,7 @@
 module pipeline_mem_stage (
     input wire clk,                     // 时钟信号
     input wire reset,                   // 复位信号，低电平有效
+    input wire stall,
 
     // 上一阶段或id阶段的信号
     input wire [63:0] alu_result_EX,    // 从EX阶段传递的ALU计算结果，作为地址
@@ -56,7 +57,7 @@ module pipeline_mem_stage (
             rf_wr_en_MEM <= 0;
             rf_wr_sel_MEM <= 0;
             memorying <= 0;
-        end else begin
+        end else if (~stall) begin
             // 传递给下一个阶段的ALU结果 (对于不需要访问内存的指令)
             alu_result_MEM <= alu_result_EX;
 

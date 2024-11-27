@@ -6,6 +6,7 @@
 module pipeline_wb_stage (
     input wire clk,                    // 时钟信号
     input wire reset,                  // 复位信号，低电平有效
+    input wire stall,
     input wire [1:0] rf_wr_sel,              // 控制信号，选择从内存还是ALU写回
     input wire [63:0] alu_result_MEM,  // 从MEM阶段传递的ALU结果
     input wire [63:0] mem_data_MEM,    // 从MEM阶段传递的内存数据
@@ -41,7 +42,7 @@ module pipeline_wb_stage (
             rd_WB <= 5'b0;
             reg_write_WB <= 1'b0;
             write_data_WB <= 64'b0;
-        end else begin
+        end else if(~stall) begin
             rd_WB <= rd_MEM;              // 将目的寄存器地址传递给写回阶段
             reg_write_WB <= reg_write_MEM; // 将寄存器写使能信号传递给写回阶段
             write_data_WB <= write_data_MEM;

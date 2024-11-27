@@ -29,7 +29,8 @@ module pipeline_id_stage (
     // 控制信号
     output reg rf_wr_en,             // 寄存器写使能信号
     output reg do_jump,              // 跳转控制信号
-    output reg is_branch,
+    output reg is_branch,            // 是否b_type
+    output wire is_debug,
     output reg alu_a_sel,            // ALU 输入A选择信号
     output reg alu_b_sel,            // ALU 输入B选择信号
     output reg [3:0] alu_ctrl,       // ALU 控制信号
@@ -43,6 +44,8 @@ module pipeline_id_stage (
     output reg [4:0] addr_reg_read_1, addr_reg_read_2 // 连接源寄存器堆地址
 );
     reg [31:0] instruction_ID;
+
+    
 
     assign reg_data1_ID   = (forward_rs1_sel) ? forward_rs1_data : data_reg_read_1;
     assign reg_data2_ID   = (forward_rs2_sel) ? forward_rs2_data : data_reg_read_2;
@@ -75,6 +78,7 @@ module pipeline_id_stage (
         .alu_ctrl(alu_ctrl_wire),
         .dm_rd_ctrl(dm_rd_ctrl_wire),
         .dm_wr_ctrl(dm_wr_ctrl_wire),
+        .is_debug(is_debug),
         .opcode(instruction_IF[6:0]),
         .funct3(instruction_IF[14:12]),
         .funct7(instruction_IF[31:25])

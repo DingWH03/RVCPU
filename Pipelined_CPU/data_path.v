@@ -15,8 +15,9 @@ module data_path(
     // --------------wb阶段的输出(与寄存器堆的连线)-----------------
     output [63:0] write_data_WB,   // 数据信号
     output [4:0] rd_WB,            // 地址信号
-    output reg_write_WB           // 使能控制信号
+    output reg_write_WB,           // 使能控制信号
     // -------------------------------------------------------------
+    output wire is_debug
 );
 
 wire [63:0] pc_if_to_id, pc_id_to_ex, pc_ex_to_mem, pc_mem_to_wb; // 各阶段PC值之间的传递
@@ -249,6 +250,7 @@ pipeline_id_stage stage2(
     .rf_wr_en(rf_wr_en_ID), // 寄存器写使能信号，需要传递至wb阶段
     .do_jump(do_jump), // jump控制信号，接入ex阶段（BrE || do_jump）
     .is_branch(is_branch),
+    .is_debug(is_debug),
     .alu_a_sel(alu_a_sel_ID),
     .alu_b_sel(alu_b_sel_ID),
     .alu_ctrl(alu_ctrl_ID),
@@ -374,6 +376,7 @@ pipeline_ex_stage stage3(
 pipeline_mem_stage stage4(
     .clk(clk),
     .reset(rst),
+    .stall(1'b0),
     .alu_result_EX(alu_result_EX),
     .reg_data2_EX(reg_data2_EX),
     .rd_EX(rd_EX),
@@ -416,6 +419,7 @@ pipeline_mem_stage stage4(
 pipeline_wb_stage stage5(
     .clk(clk),
     .reset(rst),
+    .stall(1'b0),
     .rf_wr_sel(rf_wr_sel_MEM),
     .alu_result_MEM(alu_result_MEM),
     .mem_data_MEM(mem_data_MEM),
