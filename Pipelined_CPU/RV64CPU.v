@@ -2,6 +2,7 @@
 module RVCPU(
 input clk,
 input rst,
+output [7:0] led,
 input uart_rxd, // uart 接收端
 output uart_txd // uart 发送端
 );
@@ -143,7 +144,7 @@ uart_top uart0(
     .rst_n(!rst),
     .uart_rxd(uart_rxd),
     .uart_txd(uart_txd),
-    .led(),
+    .led(led),
     .uart_read_data(uart_read_data),
     .uart_write_data(uart_write_data),
     .uart_addr(uart_addr),
