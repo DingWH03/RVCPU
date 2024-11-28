@@ -46,8 +46,8 @@ overviewSnapshots: true
 
 ### 特性概览
 
-- 基本 ALU 操作（ADD、SUB、AND、OR、 OR）
-- 指令获取、解码、执行、内存和写回阶段
+- 基本 ALU 操作（ADD、SUB、AND、OR、 XOR）
+- 指令获取、解码、执行、访存和写回阶段
 - 立即数生成和处理
 - 寄存器文件读写操作
 - 加载和存储操作（LW、SW）
