@@ -43,6 +43,8 @@
 
 ## 运行代码
 
+> 流水线CPU仿真工具已更换为支持SystemVerilog的Verilator，需安装Verilator进行仿真，仍然可以使用[运行](#运行)这里的命令来仿真。
+
 ### 安装
 
 目前使用 iverilog 进行模拟。
