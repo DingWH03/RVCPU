@@ -15,7 +15,7 @@ end
 
 initial
 begin
-   $readmemh("/home/dwh/code/RVCPU/meminit/inst.dat",inst_mem);
+   $readmemh("../meminit/inst.dat",inst_mem);
    // 打印内存前10个地址的值
    for(i=0; i<10; i=i+1) begin
        $display("inst_mem[%0d] = %h", i, inst_mem[i]);

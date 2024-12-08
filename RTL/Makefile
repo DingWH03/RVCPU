@@ -3,7 +3,7 @@ VERILATOR = verilator
 CXX = g++
 
 # Directories
-SRC_DIR = ..
+SRC_DIR = .
 COMPONENTS_DIR = $(SRC_DIR)/Components
 ALU_DIR = $(COMPONENTS_DIR)/ALU
 BRANCH_DIR = $(COMPONENTS_DIR)/Branch
@@ -15,8 +15,9 @@ REGFILE_DIR = $(COMPONENTS_DIR)/RegisterFile
 UART_DIR = $(COMPONENTS_DIR)/UART
 GPIO_DIR = $(COMPONENTS_DIR)/GPIO
 SYS_BUS_DIR = $(COMPONENTS_DIR)/Sys_bus
-RVCU_DIR = $(SRC_DIR)/Pipelined_CPU
-PIPELINE_DIR = $(RVCU_DIR)/pipeline
+RVCU_DIR = $(SRC_DIR)/RVCPU_top
+PIPELINE_DIR = $(SRC_DIR)/pipeline
+TB_CPP_DIR = $(SRC_DIR)/tb_cpp
 OUTPUT_DIR = output
 BUILD_DIR = $(OUTPUT_DIR)/build
 
@@ -50,7 +51,7 @@ EXE = $(OUTPUT_DIR)/RVCPU_tb_sim
 WAVEFORM_VCD = $(OUTPUT_DIR)//waveform.vcd
 
 # C++ testbench
-TB_CPP_CP = $(RVCU_DIR)/tb_main.cpp
+TB_CPP_CP = $(TB_CPP_DIR)/tb_main.cpp
 TB_CPP = $(OUTPUT_DIR)/tb_main.cpp
 
 # Default target

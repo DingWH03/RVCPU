@@ -12,7 +12,9 @@
 
 该项目是 RISC-V CPU 的DEMO，实现了核心功能并支持 RISC-V 处理器的一些典型功能。
 
-这个文件是项目的指令集介绍以及基本实现情况，更多介绍与实现细节在[单周期CPU](Single_Cycle_CPU/README.md)、[多周期流水线CPU](Pipelined_CPU/README.md)中进行介绍。
+这个文件是项目的指令集介绍以及基本实现情况，[文档](./docs/README.md)中进行介绍。
+
+> checkout1分支中有单周期CPU的代码。
 
 ## 功能
 
