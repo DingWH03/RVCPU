@@ -5,7 +5,7 @@ IVERILOG = iverilog
 VVP = vvp
 
 # Directories
-SRC_DIR = ..
+SRC_DIR = .
 COMPONENTS_DIR = $(SRC_DIR)/Components
 ALU_DIR = $(COMPONENTS_DIR)/ALU
 BRANCH_DIR = $(COMPONENTS_DIR)/Branch
@@ -15,7 +15,6 @@ DRAM_DIR = $(COMPONENTS_DIR)/Dram
 ROM_DIR = $(COMPONENTS_DIR)/Rom
 PC_DIR = $(COMPONENTS_DIR)/PC
 REGFILE_DIR = $(COMPONENTS_DIR)/RegisterFile
-RVCU_DIR = $(SRC_DIR)/Single_Cycle_CPU
 OUTPUT_DIR = output
 
 # Source files
@@ -28,8 +27,8 @@ DRAM_SRC = $(DRAM_DIR)/dram.v
 ROM_SRC = $(ROM_DIR)/rom.v
 PC_SRC = $(PC_DIR)/PC.v
 REGFILE_SRC = $(REGFILE_DIR)/regfileI64.v 
-RVCU_SRC = $(RVCU_DIR)/RVCPU.v \
-			$(RVCU_DIR)/RVCPU_tb.v
+RVCU_SRC = $(SRC_DIR)/RVCPU.v \
+			$(SRC_DIR)/RVCPU_tb.v
 
 # Output files
 OUTPUT = $(OUTPUT_DIR)/RVCPU_tb.vvp
