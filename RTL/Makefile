@@ -24,14 +24,14 @@ OUTPUT_DIR = output
 BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
-ALU_SRC = $(ALU_DIR)/ALU64.v
-BRANCH_SRC = $(BRANCH_DIR)/branch64.v
-CTRL_SRC = $(CTRL_DIR)/ctrl64.v \
+ALU_SRC = $(ALU_DIR)/ALU.v
+BRANCH_SRC = $(BRANCH_DIR)/branch.v
+CTRL_SRC = $(CTRL_DIR)/ctrl.v \
             $(CTRL_DIR)/dram_ctrl.v
-IMM_SRC = $(IMM_DIR)/imm64.v
+IMM_SRC = $(IMM_DIR)/imm.v
 DRAM_SRC = $(DRAM_DIR)/dram.v
 ROM_SRC = $(ROM_DIR)/rom.v
-REGFILE_SRC = $(REGFILE_DIR)/regfileI64.v 
+REGFILE_SRC = $(REGFILE_DIR)/regfileI.v 
 UART_SRC = $(UART_DIR)/uart.v \
             $(UART_DIR)/uart_rx.v \
             $(UART_DIR)/uart_tx.v
@@ -44,7 +44,7 @@ PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_if_stage.v \
                 $(PIPELINE_DIR)/pipeline_wb_stage.v  \
                 $(PIPELINE_DIR)/hazard.v             \
                 $(PIPELINE_DIR)/forwarding.v 
-RVCU_SRC = $(RVCU_DIR)/RV64CPU.v \
+RVCU_SRC = $(RVCU_DIR)/RVCPU.v \
             $(RVCU_DIR)/data_path.v
 
 # Verilator output and executable
