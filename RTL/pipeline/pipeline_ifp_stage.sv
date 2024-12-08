@@ -1,6 +1,6 @@
-// 文件名: pipeline_ifp_stage.v
+// 文件名: pipeline_ifp_stage.sv
 // 功能: 从5级流水线CPU中的指令预取阶段新增的指令预取准备阶段 (Instruction Fetch Prepare Stage)
-// mem: no
+// mem: yes
 // regs: no
 `include "../Modules/defines.v"
 module pipeline_ifp_stage (
