@@ -7,6 +7,7 @@ module pipeline_ifr_stage (
     input logic clk,               // 时钟信号
     input logic reset,             // 复位信号，低电平有效
     input logic stall,             // 流水线暂停信号
+    input logic flush,             // 流水线冲刷信号（拆分之后第二阶段需要）
     input logic [63:0] pc_IFP,     // 上一阶段传来的PC地址
     input logic if_channel_sel,   // 选择从rom还是dram中读取数据，dram置1
 
@@ -20,7 +21,7 @@ module pipeline_ifr_stage (
 );
 
 always_ff @(posedge clk or posedge reset) begin
-    if (reset)begin
+    if (reset||flush)begin
         data_reading = 0;
         pc_IFR = 64'b0;
         Instruction = 32'b0;

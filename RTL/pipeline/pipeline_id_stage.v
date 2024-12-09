@@ -53,7 +53,6 @@ module pipeline_id_stage (
     
 
     // 实例化立即数解码模块
-    wire [63:0] imm_wire;
     imm imm0 (
         .inst(instruction_ID),
         .out(imm_ID)
