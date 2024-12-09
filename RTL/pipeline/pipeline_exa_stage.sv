@@ -6,7 +6,7 @@
 module pipeline_exa_stage (
     input logic clk,                  // 时钟信号
     input logic reset,                // 复位信号，低电平有效
-    input logic flush,
+    // input logic flush,           // 在分支模块之后，不需要冲刷
     input logic stall,            // 流水线暂停信号
     input logic [63:0] reg_data1_EXB,  // 从ID阶段传递的源操作数1
     input logic [63:0] reg_data2_EXB,  // 从ID阶段传递的源操作数2
@@ -55,7 +55,7 @@ module pipeline_exa_stage (
 
     // ALU计算结果的时序逻辑 和其他信号
     always_ff @(posedge clk or negedge reset) begin
-        if (reset||flush) begin
+        if (reset) begin
             alu_result_EXA <= 64'b0;
             pc_EXA <= 0;
             dm_rd_ctrl_EXA <= 0;
