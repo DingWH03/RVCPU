@@ -54,6 +54,7 @@ logic [63:0] forward_rs1_data;
 logic [63:0] forward_rs2_data;
 logic forward_rs1_sel;
 logic forward_rs2_sel;
+logic [4:0] rs1_IDR, rs2_IDR;
 
 // ifp连接信号定义
 logic if_channel_sel;
@@ -69,6 +70,8 @@ logic do_jump;
 logic is_branch;
 logic alu_a_sel;
 logic alu_b_sel;
+logic is_rs1_used;
+logic is_rs2_used;
 logic [3:0] alu_ctrl;
 logic [2:0] BrType;
 logic [1:0] rf_wr_sel;
@@ -146,8 +149,8 @@ hazard hazard0(
 
 // forwarding模块初始化
 forwarding forwarding0(
-    .rs1_IDC(rs1_IDC),           // IDC阶段寄存器读取地址1
-    .rs2_IDC(rs2_IDC),           // IDC阶段寄存器读取地址2
+    .rs1_IDR(rs1_IDR),           // IDC阶段寄存器读取地址1
+    .rs2_IDR(rs2_IDR),           // IDC阶段寄存器读取地址2
     .rd_EXB(rd_EXB),            // EXA阶段目标寄存器地址
     .rf_wr_en_EXB(rf_wr_en_EXB),      // EXA阶段寄存器写使能信号
     .rd_EXA(rd_EXA),            // EXA阶段目标寄存器地址
@@ -217,6 +220,8 @@ pipeline_idc_stage3 stage3(
     .imm_ID(imm_ID),                     // 解码出的立即数
     .pc_IDC(pc_idc_to_idr),                    // 输出到下一阶段的PC
     .rf_wr_en(rf_wr_en),                  // 寄存器写使能信号
+    .is_rs1_used(is_rs1_used),
+    .is_rs2_used(is_rs2_used),
     .do_jump(do_jump),                   // 跳转控制信号
     .is_branch(is_branch),                 // 是否b_type
     .is_debug(),                  // 调试信号
@@ -271,6 +276,8 @@ pipeline_idr_stage4 stage4(
     .alu_ctrl_IDR(alu_ctrl_IDR),             // ALU 控制信号
     .BrType_IDR(BrType_IDR),               // 分支类型控制信号
     .rf_wr_sel_IDR(rf_wr_sel_IDR),            // 寄存器写回数据来源选择
+    .rs1_IDR(rs1_IDR),
+    .rs2_IDR(rs2_IDR),
     .dm_rd_ctrl_IDR(dm_rd_ctrl_IDR),           // 数据存储器读取控制信号
     .dm_wr_ctrl_IDR(dm_wr_ctrl_IDR)            // 数据存储器写入控制信号
 );

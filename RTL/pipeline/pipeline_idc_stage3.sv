@@ -26,6 +26,8 @@ module pipeline_idc_stage3 (
     output logic [3:0] alu_ctrl,       // ALU 控制信号
     output logic [2:0] BrType,         // 分支类型控制信号
     output logic [1:0] rf_wr_sel,      // 寄存器写回数据来源选择
+    output logic is_rs1_used,
+    output logic is_rs2_used,
 
     // 与内存模块连接的控制信号 (需要越过ex传递到mem阶段)
     output logic [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
@@ -61,6 +63,8 @@ module pipeline_idc_stage3 (
         .dm_rd_ctrl(dm_rd_ctrl_wire),
         .dm_wr_ctrl(dm_wr_ctrl_wire),
         .is_debug(is_debug),
+        .is_rs1_used(is_rs1_used),
+        .is_rs2_used(is_rs2_used),
         .opcode(instruction_IF[6:0]),
         .funct3(instruction_IF[14:12]),
         .funct7(instruction_IF[31:25])

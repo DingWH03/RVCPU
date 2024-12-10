@@ -18,7 +18,7 @@ module hazard (
   assign flush_IDC = branch_taken_EXB;
   assign flush_IDR = branch_taken_EXB;
   assign flush_IFR = branch_taken_EXB;
-  assign flush_EXB = branch_taken_EXB | no_forwarding_data;
+  assign flush_EXB = no_forwarding_data;
   assign branch_taken_IFP = branch_taken_EXB;
   assign branch_target_IFP = branch_target_EXB;
   
