@@ -61,7 +61,7 @@ module pipeline_ifp_stage1 (
             dm_rd_ctrl = 3'b101;
         end
         else begin
-            im_addr = pc_next;
+            im_addr = pc_IFP;
             if_channel_sel = 0;
             dram_addr = 64'bz;
             dm_rd_ctrl = 3'b000;
