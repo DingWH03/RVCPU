@@ -3,7 +3,7 @@
 // mem: yes
 // regs: no
 // 外设以及内存读取的数据在memd阶段进行接收
-`include "../Modules/defines.v"
+`include "Modules/defines.v"
 module pipeline_memp_stage7 (
     input logic clk,                     // 时钟信号
     input logic reset,                   // 复位信号，低电平有效
@@ -44,7 +44,7 @@ module pipeline_memp_stage7 (
     logic is_mem;
 
     // 组合逻辑判定
-    always_comb @(*) begin
+    always_comb begin
         if (dm_rd_ctrl_EXA||dm_wr_ctrl_EXA) begin
             is_mem = 1;
             is_dram = (alu_result_EXA > `DRAM_BASE_ADDR);  // 通过地址判定访问的设备类型

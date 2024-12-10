@@ -84,7 +84,7 @@ module pipeline_idc_stage3 (
             pc_IDC         <= 0;
             rs1_IDC <= 0;  // rs1地址
             rs2_IDC <= 0;  // rs2地址
-            imm_ID < =;
+            imm_ID <= 0;
         end else if(~stall) begin
             // 锁存解码得到的字段
             rd_ID          <= instruction_IF[11:7];   // 目的寄存器

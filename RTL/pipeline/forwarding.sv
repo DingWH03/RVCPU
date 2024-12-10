@@ -37,6 +37,9 @@ module forwarding (
     output logic forward_rs1_sel, // 前递寄存器1数据选择信号
     output logic forward_rs2_sel  // 前递寄存器2数据选择信号
 );
+    logic no_forwarding_data1;
+    logic no_forwarding_data2;
+    assign no_forwarding_data = no_forwarding_data1 | no_forwarding_data2;
 
     logic [63:0] pc_plus4_MEMP;
     logic [63:0] write_data_MEMP;
@@ -71,59 +74,67 @@ module forwarding (
     end
 
     // 前递逻辑：寄存器1数据
-    always_comb @(*) begin
-        no_forwarding_data = 0;
+    always_comb begin
         if (rf_wr_en_EXB && (rd_EXB != 5'b0) && (rs1_IDC == rd_EXB)) begin
             forward_rs1_data = 0; // EXB阶段数据转发失败暂停流水线
-            no_forwarding_data = 1;
+            no_forwarding_data1 = 1;
             forward_rs1_sel = 1'b1;
         end else if (rf_wr_en_EXA && (rd_EXA != 5'b0) && (rs1_IDC == rd_EXA)) begin
             forward_rs1_data = alu_result_EXA; // EXA阶段数据转发
+            no_forwarding_data1 = 0;
             forward_rs1_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMP != 4'b0) && (rd_MEMP != 5'b0) && (rs1_IDC == rd_MEMP)) begin
             forward_rs1_data = 0; // MEMP阶段数据转发
-            no_forwarding_data = 1;
+            no_forwarding_data1 = 1;
             forward_rs1_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMP == 4'b0&&rf_wr_en_MEMP) && (rd_MEMP != 5'b0) && (rs1_IDC == rd_MEMP)) begin
             forward_rs1_data = write_data_MEMP; // MEMRR阶段数据转发
+            no_forwarding_data1 = 0;
             forward_rs1_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMR != 4'b0||rf_wr_en_MEMR) && (rd_MEMR != 5'b0) && (rs1_IDC == rd_MEMR)) begin
             forward_rs1_data = write_data_MEMR; // MEMR阶段数据转发
+            no_forwarding_data1 = 0;
             forward_rs1_sel = 1'b1;
         end else if (reg_write_WB && (rd_WB != 5'b0) && (rs1_IDC == rd_WB)) begin
             forward_rs1_data = write_data_WB; // WB阶段数据转发
+            no_forwarding_data1 = 0;
             forward_rs1_sel = 1'b1;
         end else begin
             forward_rs1_data = 64'b0; // 默认值
+            no_forwarding_data1 = 0;
             forward_rs1_sel = 1'b0;  // 不进行前递
         end
     end
 
     // 前递逻辑：寄存器2数据
-    always_comb @(*) begin
-        no_forwarding_data = 0;
+    always_comb begin
         if (rf_wr_en_EXB && (rd_EXB != 5'b0) && (rs2_IDC == rd_EXB)) begin
             forward_rs2_data = 0; // EXB阶段数据转发失败暂停流水线
-            no_forwarding_data = 1;
+            no_forwarding_data2 = 1;
             forward_rs2_sel = 1'b1;
         end else if (rf_wr_en_EXA && (rd_EXA != 5'b0) && (rs2_IDC == rd_EXA)) begin
             forward_rs2_data = alu_result_EXA; // EXA阶段数据转发
+            no_forwarding_data2 = 0;
             forward_rs2_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMP != 4'b0) && (rd_MEMP != 5'b0) && (rs2_IDC == rd_MEMP)) begin
             forward_rs2_data = 0; // MEMP阶段数据转发
-            no_forwarding_data = 1;
+            no_forwarding_data2 = 1;
             forward_rs2_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMP == 4'b0&&rf_wr_en_MEMP) && (rd_MEMP != 5'b0) && (rs2_IDC == rd_MEMP)) begin
             forward_rs2_data = write_data_MEMP; // MEMRR阶段数据转发
+            no_forwarding_data2 = 0;
             forward_rs2_sel = 1'b1;
         end else if ((dm_rd_ctrl_MEMR != 4'b0||rf_wr_en_MEMR) && (rd_MEMR != 5'b0) && (rs2_IDC == rd_MEMR)) begin
             forward_rs2_data = write_data_MEMR; // MEMR阶段数据转发
+            no_forwarding_data2 = 0;
             forward_rs2_sel = 1'b1;
         end else if (reg_write_WB && (rd_WB != 5'b0) && (rs2_IDC == rd_WB)) begin
             forward_rs2_data = write_data_WB; // WB阶段数据转发
+            no_forwarding_data2 = 0;
             forward_rs2_sel = 1'b1;
         end else begin
             forward_rs2_data = 64'b0; // 默认值
+            no_forwarding_data2 = 0;
             forward_rs2_sel = 1'b0;  // 不进行前递
         end
     end

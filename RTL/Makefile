@@ -24,6 +24,7 @@ OUTPUT_DIR = output
 BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
+DEFINES_SRC = $(MODULES_DIR)/defines.v
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.v \
@@ -36,16 +37,20 @@ UART_SRC = $(UART_DIR)/uart.v \
             $(UART_DIR)/uart_rx.v \
             $(UART_DIR)/uart_tx.v
 GPIO_SRC = $(GPIO_DIR)/gpio.v 
-SYS_BUS_SRC = $(SYS_BUS_DIR)/sys_bus.v 
-PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_if_stage.v \
-                $(PIPELINE_DIR)/pipeline_id_stage.v \
-                $(PIPELINE_DIR)/pipeline_ex_stage.v \
-                $(PIPELINE_DIR)/pipeline_mem_stage.v \
-                $(PIPELINE_DIR)/pipeline_wb_stage.v  \
-                $(PIPELINE_DIR)/hazard.v             \
-                $(PIPELINE_DIR)/forwarding.v 
-RVCU_SRC = $(RVCU_DIR)/RVCPU.v \
-            $(RVCU_DIR)/data_path.v
+SYS_BUS_SRC = $(SYS_BUS_DIR)/sys_bus.sv 
+PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_ifp_stage1.sv \
+                $(PIPELINE_DIR)/pipeline_ifr_stage2.sv \
+                $(PIPELINE_DIR)/pipeline_idc_stage3.sv \
+                $(PIPELINE_DIR)/pipeline_idr_stage4.sv \
+                $(PIPELINE_DIR)/pipeline_exb_stage5.sv \
+                $(PIPELINE_DIR)/pipeline_exa_stage6.sv \
+                $(PIPELINE_DIR)/pipeline_memp_stage7.sv \
+                $(PIPELINE_DIR)/pipeline_memr_stage8.sv \
+                $(PIPELINE_DIR)/pipeline_wb_stage9.sv  \
+                $(PIPELINE_DIR)/hazard.sv             \
+                $(PIPELINE_DIR)/forwarding.sv 
+RVCU_SRC = $(RVCU_DIR)/RVCPU.sv \
+            $(RVCU_DIR)/data_path.sv
 
 # Verilator output and executable
 VOBJ = $(BUILD_DIR)/VRVCPU
@@ -68,10 +73,10 @@ $(TB_CPP): $(TB_CPP_CP) $(OUTPUT_DIR)
 	cp $(TB_CPP_CP) $(TB_CPP)
 
 # Verilator model generation
-$(VOBJ): $(TB_CPP) $(BUILD_DIR) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
+$(VOBJ): $(TB_CPP) $(BUILD_DIR) $(DEFINES_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
 	$(VERILATOR) --cc --exe --build --trace --Wno-lint -timescale 1ns/1ns \
 		-Mdir $(BUILD_DIR) \
-		--top-module RVCPU $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC)  $(RVCU_SRC) $(TB_CPP)
+		--top-module RVCPU $(DEFINES_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC)  $(RVCU_SRC) $(TB_CPP)
 
 
 # Build simulation executable

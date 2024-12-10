@@ -59,7 +59,7 @@ module pipeline_idr_stage4 (
 );
     logic [63:0] reg_data1_ID, reg_data2_ID;
 
-    always_comb @(*) begin
+    always_comb begin
         reg_data1_ID   = (forward_rs1_sel) ? forward_rs1_data : data_reg_read_1;
         reg_data2_ID   = (forward_rs2_sel) ? forward_rs2_data : data_reg_read_2;
     end

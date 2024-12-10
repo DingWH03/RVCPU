@@ -2,7 +2,7 @@
 // 功能: 从5级流水线CPU中的指令预取阶段新增的指令预取准备阶段 (Instruction Fetch Prepare Stage)
 // mem: yes
 // regs: no
-`include "../Modules/defines.v"
+`include "Modules/defines.v"
 module pipeline_ifp_stage1 (
     input logic clk,               // 时钟信号
     input logic reset,             // 复位信号，低电平有效
@@ -15,7 +15,7 @@ module pipeline_ifp_stage1 (
     output logic [2:0] dm_rd_ctrl, // 访问数据存储器控制信号
     output logic if_channel_sel,   // 选择从rom还是dram中读取数据，dram置1
 
-    output logic [63:0] pc_IFP,      // 当前PC值
+    output logic [63:0] pc_IFP      // 当前PC值
 );
 
     logic [63:0] pc_next;           // 下一个PC值寄存器
@@ -33,7 +33,7 @@ module pipeline_ifp_stage1 (
     end
 
     // 计算下一个PC值
-    always_comb @(*) begin
+    always_comb begin
         if (init)
             pc_next = 64'b0; // 初始化阶段PC强制为0
         else if (branch_taken)
@@ -53,8 +53,7 @@ module pipeline_ifp_stage1 (
     end
 
     // 指令存储器地址
-    assign im_addr = pc_next; // 输出的是计算后的下一个PC值
-    always_comb @(*) begin
+    always_comb begin
         if (pc_next>=`DRAM_BASE_ADDR) begin
             im_addr = 64'bz;
             if_channel_sel = 1;

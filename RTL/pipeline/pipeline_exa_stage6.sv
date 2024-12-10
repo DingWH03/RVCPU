@@ -40,7 +40,7 @@ module pipeline_exa_stage6 (
     logic [63:0] alu_result;
 
     // ALU输入选择 (组合逻辑)
-    always_comb @(*) begin
+    always_comb begin
         alu_input1 = alu_a_sel_EXB ? reg_data1_EXB : pc_EXB;
         alu_input2 = alu_b_sel_EXB ? imm_EXB : reg_data2_EXB;  // 对于I型指令，第二个操作数是立即数
     end

@@ -53,7 +53,7 @@ module pipeline_exb_stage5 (
 
     logic BrE;  // 从 branch 模块输出的跳转条件
 
-    always_comb @(*) begin
+    always_comb begin
         branch_taken_EXB = (BrE & is_branch_IDR) | do_jump_IDR;
         branch_target_EXB = pc_IDR + imm_IDR;
     end
