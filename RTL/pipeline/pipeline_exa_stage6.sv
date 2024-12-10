@@ -3,7 +3,7 @@
 // mem: no
 // regs: no
 
-module pipeline_exa_stage (
+module pipeline_exa_stage6 (
     input logic clk,                  // 时钟信号
     input logic reset,                // 复位信号，低电平有效
     // input logic flush,           // 在分支模块之后，不需要冲刷

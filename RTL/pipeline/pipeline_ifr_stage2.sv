@@ -3,7 +3,7 @@
 // mem: no
 // regs: no
 `include "../Modules/defines.v"
-module pipeline_ifr_stage (
+module pipeline_ifr_stage2 (
     input logic clk,               // 时钟信号
     input logic reset,             // 复位信号，低电平有效
     input logic stall,             // 流水线暂停信号

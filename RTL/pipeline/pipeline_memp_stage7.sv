@@ -4,7 +4,7 @@
 // regs: no
 // 外设以及内存读取的数据在memd阶段进行接收
 `include "../Modules/defines.v"
-module pipeline_memp_stage (
+module pipeline_memp_stage7 (
     input logic clk,                     // 时钟信号
     input logic reset,                   // 复位信号，低电平有效
     input logic stall,
