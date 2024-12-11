@@ -41,6 +41,7 @@ logic stall_IDR;
 logic stall_IDC;
 logic stall_IFR;
 logic stall_IFP;
+logic nop_IDR;
 logic flush_IDC;
 logic flush_IDR;
 logic flush_IFR;
@@ -49,12 +50,13 @@ logic branch_taken_IFP;
 logic [63:0] branch_target_IFP;
 
 // forwarding连接信号线定义
-logic no_forwarding_data;
+logic no_forwarding_data_IDR;
+logic no_forwarding_data_EXB;
+logic no_forwarding_data_MEMP;
 logic [63:0] forward_rs1_data;
 logic [63:0] forward_rs2_data;
 logic forward_rs1_sel;
 logic forward_rs2_sel;
-logic [4:0] rs1_IDR, rs2_IDR;
 
 // ifp连接信号定义
 logic if_channel_sel;
@@ -134,7 +136,9 @@ logic [4:0] rd_MEMR;
 hazard hazard0(
     .branch_taken_EXB(branch_taken_EXB),
     .branch_target_EXB(branch_target_EXB),
-    .no_forwarding_data(no_forwarding_data),
+    .no_forwarding_data_IDR(no_forwarding_data_IDR),
+    .no_forwarding_data_EXB(no_forwarding_data_EXB),
+    .no_forwarding_data_MEMP(no_forwarding_data_MEMP),
     .stall_IDR(stall_IDR),
     .stall_IDC(stall_IDC),
     .stall_IFR(stall_IFR),
@@ -143,14 +147,17 @@ hazard hazard0(
     .flush_IDR(flush_IDR),
     .flush_IFR(flush_IFR),
     .flush_EXB(flush_EXB),
+    .nop_IDR(nop_IDR),
     .branch_taken_IFP(branch_taken_IFP),
     .branch_target_IFP(branch_target_IFP)
 );
 
 // forwarding模块初始化
 forwarding forwarding0(
-    .rs1_IDR(rs1_IDR),           // IDC阶段寄存器读取地址1
-    .rs2_IDR(rs2_IDR),           // IDC阶段寄存器读取地址2
+    .rs1_IDC(rs1_IDC),           // IDC阶段寄存器读取地址1
+    .rs2_IDC(rs2_IDC),           // IDC阶段寄存器读取地址2
+    .rd_IDR(rd_IDR),            // EXA阶段目标寄存器地址
+    .rf_wr_en_IDR(rf_wr_en_IDR),      // EXA阶段寄存器写使能信号
     .rd_EXB(rd_EXB),            // EXA阶段目标寄存器地址
     .rf_wr_en_EXB(rf_wr_en_EXB),      // EXA阶段寄存器写使能信号
     .rd_EXA(rd_EXA),            // EXA阶段目标寄存器地址
@@ -172,7 +179,9 @@ forwarding forwarding0(
     .rd_WB(rd_WB),             // WB阶段目标寄存器地址
     .reg_write_WB(reg_write_WB),      // WB阶段寄存器写使能信号
     .write_data_WB(write_data_WB),     // WB阶段写入数据
-    .no_forwarding_data(no_forwarding_data),// 没有可转发的数据暂停IDR
+    .no_forwarding_data_IDR(no_forwarding_data_IDR),
+    .no_forwarding_data_EXB(no_forwarding_data_EXB),
+    .no_forwarding_data_MEMP(no_forwarding_data_MEMP),
     .forward_rs1_data(forward_rs1_data),  // 前递寄存器1数据
     .forward_rs2_data(forward_rs2_data),  // 前递寄存器2数据
     .forward_rs1_sel(forward_rs1_sel),   // 前递寄存器1数据选择信号
@@ -242,6 +251,7 @@ pipeline_idr_stage4 stage4(
     .reset(rst),                     // 复位信号，低电平有效
     .stall(stall_IDR),                     // 流水线暂停信号
     .flush(flush_IDR),                     // 流水线冲刷信号
+    .nop(nop_IDR),
     .pc_IDC(pc_idc_to_idr),                    // 从IDC阶段传来的PC值
     .rs1_IDC(rs1_IDC),                   // 读取寄存器地址1
     .rs2_IDC(rs2_IDC),                   // 读取寄存器地址2

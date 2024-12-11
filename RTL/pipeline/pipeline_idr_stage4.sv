@@ -8,6 +8,7 @@ module pipeline_idr_stage4 (
     input logic reset,                 // 复位信号，低电平有效
     input logic stall,            // 流水线暂停信号
     input logic flush,               // 流水线冲刷信号
+    input logic nop,                // 插入气泡
 
     // 从上一个ID阶段传递进来的信号
     input logic [63:0] pc_IDC,          // 从IDC阶段传来的PC值
@@ -82,24 +83,6 @@ module pipeline_idr_stage4 (
             rs1_IDR <= 0;
             rs2_IDR <= 0;
 
-        end else if(~stall) begin
-            pc_IDR <= pc_IDC;
-            reg_data1_IDR <= (forward_rs1_sel&is_rs1_used) ? forward_rs1_data : data_reg_read_1;
-            reg_data2_IDR <= (forward_rs2_sel&is_rs2_used) ? forward_rs2_data : data_reg_read_2;
-            rd_IDR <= rd_ID;
-            imm_IDR <= imm_ID;
-            rf_wr_en_IDR <= rf_wr_en;
-            do_jump_IDR <= do_jump;
-            is_branch_IDR <= is_branch;
-            alu_a_sel_IDR <= alu_a_sel;
-            alu_b_sel_IDR <= alu_b_sel;
-            alu_ctrl_IDR <= alu_ctrl;
-            BrType_IDR <= BrType;
-            rf_wr_sel_IDR <= rf_wr_sel;
-            dm_rd_ctrl_IDR <= dm_rd_ctrl;
-            dm_wr_ctrl_IDR <= dm_wr_ctrl;
-            rs1_IDR <= rs1_IDC;
-            rs2_IDR <= rs2_IDC;
         end else if (~stall&flush) begin
             // 复位时清空寄存器
             pc_IDR <= 64'b0;
@@ -119,8 +102,47 @@ module pipeline_idr_stage4 (
             dm_wr_ctrl_IDR <= 3'b0;
             rs1_IDR <= 0;
             rs2_IDR <= 0;
+        end else if (~stall & nop) begin
+        // nop 插入气泡
+        pc_IDR <= 64'b0; // 或根据需要设置特殊的NOP值
+        reg_data1_IDR <= 64'b0;
+        reg_data2_IDR <= 64'b0;
+        rd_IDR <= 5'b0;
+        imm_IDR <= 64'b0;
+        rf_wr_en_IDR <= 0;
+        do_jump_IDR <= 0;
+        is_branch_IDR <= 0;
+        alu_a_sel_IDR <= 0;
+        alu_b_sel_IDR <= 0;
+        alu_ctrl_IDR <= 4'b0;
+        BrType_IDR <= 3'b0;
+        rf_wr_sel_IDR <= 2'b0;
+        dm_rd_ctrl_IDR <= 3'b0;
+        dm_wr_ctrl_IDR <= 3'b0;
+        rs1_IDR <= 0;
+        rs2_IDR <= 0;
 
+        end else if(~stall) begin
+            pc_IDR <= pc_IDC;
+            reg_data1_IDR <= (forward_rs1_sel) ? forward_rs1_data : data_reg_read_1;
+            reg_data2_IDR <= (forward_rs2_sel) ? forward_rs2_data : data_reg_read_2;
+            rd_IDR <= rd_ID;
+            imm_IDR <= imm_ID;
+            rf_wr_en_IDR <= rf_wr_en;
+            do_jump_IDR <= do_jump;
+            is_branch_IDR <= is_branch;
+            alu_a_sel_IDR <= alu_a_sel;
+            alu_b_sel_IDR <= alu_b_sel;
+            alu_ctrl_IDR <= alu_ctrl;
+            BrType_IDR <= BrType;
+            rf_wr_sel_IDR <= rf_wr_sel;
+            dm_rd_ctrl_IDR <= dm_rd_ctrl;
+            dm_wr_ctrl_IDR <= dm_wr_ctrl;
+            rs1_IDR <= rs1_IDC;
+            rs2_IDR <= rs2_IDC;
+        
         end
+
     end
 
 endmodule
