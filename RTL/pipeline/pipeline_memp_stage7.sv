@@ -20,13 +20,13 @@ module pipeline_memp_stage7 (
     input logic [4:0] rd_EXA,             // 从EX阶段传递的目的寄存器地址
 
     // 与外设接口的信号
-    // output logic [63:0] sys_bus_addr,          // 传递给总线的地址信号
+    output logic [63:0] sys_bus_addr,          // 传递给总线的地址信号
     output logic [63:0] sys_bus_din,           // 传递给总线的数据（写入）
     output logic [2:0] sys_bus_rd_ctrl,        // 内存读控制信号
     output logic [2:0] sys_bus_wr_ctrl,        // 内存写控制信号
 
     // 与dram接口的信号
-    // output logic [63:0] dram_addr,          // 传递给内存的地址信号
+    output logic [63:0] dram_addr,          // 传递给内存的地址信号
     output logic [63:0] dram_din,           // 传递给内存的数据（写入）
     output logic [2:0] dram_rd_ctrl,        // 内存读控制信号
     output logic [2:0] dram_wr_ctrl,        // 内存写控制信号
@@ -47,7 +47,7 @@ module pipeline_memp_stage7 (
     always_comb begin
         if (dm_rd_ctrl_EXA||dm_wr_ctrl_EXA) begin
             is_mem = 1;
-            is_dram = (alu_result_EXA > `DRAM_BASE_ADDR);  // 通过地址判定访问的设备类型
+            is_dram = (alu_result_EXA >= `DRAM_BASE_ADDR);  // 通过地址判定访问的设备类型
         end
         else begin
             is_mem = 0;
@@ -67,17 +67,21 @@ module pipeline_memp_stage7 (
             dram_wr_ctrl <= 0;
         end else if (~stall) begin
             if(is_mem&~is_dram)begin // 访问外设
+                sys_bus_addr <= alu_result_EXA;
                 sys_bus_din <= reg_data2_EXA;
                 sys_bus_rd_ctrl <= dm_rd_ctrl_EXA;
                 sys_bus_wr_ctrl <= dm_wr_ctrl_EXA;
+                dram_addr <= 0;
                 dram_din <= 0;
                 dram_rd_ctrl <= 0;
                 dram_wr_ctrl <= 0;
             end
             else if(is_mem&is_dram) begin  // 访问dram
+                sys_bus_addr <= 0;
                 sys_bus_din <= 0;
                 sys_bus_rd_ctrl <= 0;
                 sys_bus_wr_ctrl <= 0;
+                dram_addr <= alu_result_EXA;
                 dram_din <= reg_data2_EXA;
                 dram_rd_ctrl <= dm_rd_ctrl_EXA;
                 dram_wr_ctrl <= dm_wr_ctrl_EXA;

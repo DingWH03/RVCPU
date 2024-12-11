@@ -385,11 +385,13 @@ pipeline_memp_stage7 stage7(
     .rd_EXA(rd_EXA),                       // EX阶段传递的目的寄存器地址
 
     // 外设接口相关信号
+    .sys_bus_addr(bus_addr),
     .sys_bus_din(bus_din),                  // 写入总线的数据
     .sys_bus_rd_ctrl(bus_rd_ctrl),              // 外设接口读控制信号
     .sys_bus_wr_ctrl(bus_wr_ctrl),              // 外设接口写控制信号
 
     // 与DRAM接口相关信号
+    .dram_addr(dram_addr),
     .dram_din(dram_din),                     // 写入DRAM的数据
     .dram_rd_ctrl(dram_rd_ctrl),                 // DRAM读控制信号
     .dram_wr_ctrl(dram_wr_ctrl),                 // DRAM写控制信号
