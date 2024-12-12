@@ -64,10 +64,7 @@ module pipeline_idc_stage3 (
         .dm_wr_ctrl(dm_wr_ctrl_wire),
         .is_debug(is_debug),
         .is_rs1_used(is_rs1_used),
-        .is_rs2_used(is_rs2_used),
-        .opcode(instruction_IF[6:0]),
-        .funct3(instruction_IF[14:12]),
-        .funct7(instruction_IF[31:25])
+        .is_rs2_used(is_rs2_used)
     );
 
     // 时钟上升沿的逻辑，用于锁存信号

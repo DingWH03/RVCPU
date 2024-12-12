@@ -1,80 +1,81 @@
 `timescale 1ns / 1ns
 module ctrl(
-input     [31:0]  inst,
-output            rf_wr_en,
-output reg    [1:0]   rf_wr_sel,
-output            do_jump,
-output            is_branch,
-output reg    [2:0]   BrType,
-output            alu_a_sel,
-output            alu_b_sel,
-output reg    [3:0]   alu_ctrl,
-output reg    [2:0]   dm_rd_ctrl,
-output reg    [2:0]   dm_wr_ctrl,
-output                is_debug,
-output                is_syscall,
-output wire    is_rs1_used,
-output wire    is_rs2_used, // 新加入信号
-input   wire    [6:0]   opcode,
-input   wire    [2:0]   funct3,
-input   wire    [6:0]   funct7
+input  logic    [31:0]  inst,
+output logic           rf_wr_en,
+output logic    [1:0]   rf_wr_sel,
+output logic           do_jump,
+output logic           is_branch,
+output logic    [2:0]   BrType,
+output logic          alu_a_sel,
+output logic           alu_b_sel,
+output logic    [3:0]   alu_ctrl,
+output logic    [2:0]   dm_rd_ctrl,
+output logic    [2:0]   dm_wr_ctrl,
+output logic               is_debug,
+output logic               is_syscall,
+output logic    is_rs1_used,
+output logic    is_rs2_used // 新加入信号
 );
 
-wire    is_lui;
-wire    is_auipc;
-wire    is_jal;
-wire    is_jalr;
-wire    is_beq;
-wire    is_bne;
-wire    is_blt;
-wire    is_bge;
-wire    is_bltu;
-wire    is_bgeu;
-wire    is_lb;
-wire    is_lh;
-wire    is_lw;
-wire    is_lbu;
-wire    is_lhu;
-wire    is_sb;
-wire    is_sh;
-wire    is_sw;
-wire    is_addi;
-wire    is_slti;
-wire    is_sltiu;
-wire    is_xori;
-wire    is_ori;
-wire    is_andi;
-wire    is_slli;
-wire    is_srli;
-wire    is_srai;
-wire    is_add;
-wire    is_sub;
-wire    is_sll;
-wire    is_slt;
-wire    is_sltu;
-wire    is_xor;
-wire    is_srl;
-wire    is_sra;
-wire    is_or;
-wire    is_and;
+logic    is_lui;
+logic    is_auipc;
+logic    is_jal;
+logic    is_jalr;
+logic    is_beq;
+logic    is_bne;
+logic    is_blt;
+logic    is_bge;
+logic    is_bltu;
+logic    is_bgeu;
+logic    is_lb;
+logic    is_lh;
+logic    is_lw;
+logic    is_lbu;
+logic    is_lhu;
+logic    is_sb;
+logic    is_sh;
+logic    is_sw;
+logic    is_addi;
+logic    is_slti;
+logic    is_sltiu;
+logic    is_xori;
+logic    is_ori;
+logic    is_andi;
+logic    is_slli;
+logic    is_srli;
+logic    is_srai;
+logic    is_add;
+logic    is_sub;
+logic    is_sll;
+logic    is_slt;
+logic    is_sltu;
+logic    is_xor;
+logic    is_srl;
+logic    is_sra;
+logic    is_or;
+logic    is_and;
 
-wire    is_ld; // 64位load
-wire    is_sd; // 64位store
+logic    is_ld; // 64位load
+logic    is_sd; // 64位store
 
-wire    is_ebreak;
-wire    is_ecall;
+logic    is_ebreak;
+logic    is_ecall;
 
-wire    is_add_type;
-wire    is_u_type;
-wire    is_jump_type;
-wire    is_b_type;
-wire    is_r_type;
-wire    is_i_type;
-wire    is_s_type;
+logic    is_add_type;
+logic    is_u_type;
+logic    is_jump_type;
+logic    is_b_type;
+logic    is_r_type;
+logic    is_i_type;
+logic    is_s_type;
 
-// assign  opcode  = inst[6:0];
-// assign  funct7  = inst[31:25];
-// assign  funct3  = inst[14:12];
+logic    [6:0]   opcode;
+logic    [2:0]   funct3;
+logic    [6:0]   funct7;
+
+assign  opcode  = inst[6:0];
+assign  funct7  = inst[31:25];
+assign  funct3  = inst[14:12];
 
 assign  is_lui  = (opcode == 7'h37) ;
 assign  is_auipc= (opcode == 7'h17) ;
@@ -138,13 +139,12 @@ assign  is_s_type   = is_sb | is_sh | is_sw ;
 assign rf_wr_en     =  is_u_type | is_jump_type | is_i_type | is_r_type ;  
   
 //[1:0]rf_wr_sel
-always@(*)
-begin
+always_comb begin
     if (is_jal | is_jalr) rf_wr_sel = 2'b01;
     else if (is_r_type | is_u_type | is_addi | is_slti | is_sltiu |
         is_xori | is_ori | is_andi | is_slli | is_srli | is_srai) 
         rf_wr_sel = 2'b10;
-    else if (is_ld | is_jalr | is_lb | is_lh | is_lw | is_lbu | is_lhu) 
+    else if (is_ld | is_lb | is_lh | is_lw | is_lbu | is_lhu) 
         rf_wr_sel = 2'b11;
     else rf_wr_sel = 2'b00;
 end
@@ -160,8 +160,7 @@ assign do_jump      =  is_jalr | is_jal;
 assign is_branch = is_b_type; 
   
 //[2:0]BrType
-always@(*)
-begin
+always_comb begin
     if (is_beq) BrType = 3'b010;
     else if (is_bne) BrType = 3'b011;
     else if (is_blt) BrType = 3'b100;
@@ -178,8 +177,7 @@ assign alu_a_sel    =  is_r_type | is_i_type | is_s_type;
 assign alu_b_sel    =  ~is_r_type ;
   
 //alu_ctrl
-always@(*)
-begin
+always_comb begin
      /*待填*/
     if (is_auipc | is_jal | is_jalr | is_b_type | 
         is_s_type | is_jalr | is_lb  | is_lh  | 
@@ -197,8 +195,7 @@ begin
 end
   
 //[2:0]dm_rd_ctrl
-always@(*)
-begin
+always_comb begin
     if (is_lb) dm_rd_ctrl = 3'b001;
     else if (is_lbu) dm_rd_ctrl = 3'b010;
     else if (is_lh) dm_rd_ctrl = 3'b011;
@@ -209,8 +206,7 @@ begin
 end
 
 // [2:0] dm_wr_ctrl
-always @(*)
-begin
+always_comb begin
     if (is_sb) dm_wr_ctrl = 3'b001;
     else if (is_sh) dm_wr_ctrl = 3'b010;
     else if (is_sw) dm_wr_ctrl = 3'b011;

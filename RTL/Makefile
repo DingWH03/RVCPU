@@ -27,7 +27,7 @@ BUILD_DIR = $(OUTPUT_DIR)/build
 DEFINES_SRC = $(MODULES_DIR)/defines.v
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
-CTRL_SRC = $(CTRL_DIR)/ctrl.v \
+CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
             $(CTRL_DIR)/dram_ctrl.v
 IMM_SRC = $(IMM_DIR)/imm.v
 DRAM_SRC = $(DRAM_DIR)/dram.v
