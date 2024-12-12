@@ -3,9 +3,7 @@ module hazard (
   input logic branch_taken_EXB,
   input logic [63:0] branch_target_EXB,
 
-  input logic no_forwarding_data_IDR,  // 没有可转发的数据暂停IDR
-  input logic no_forwarding_data_EXB,  // 没有可转发的数据暂停IDR
-  input logic no_forwarding_data_MEMP,  // 没有可转发的数据暂停IDR
+  input logic no_forwarding_data,  // 没有可转发的数据暂停IDR
 
   output logic stall_IDR, stall_IDC, stall_IFR, stall_IFP,
   output logic nop_IDR,
@@ -17,9 +15,6 @@ module hazard (
   output logic branch_taken_IFP,
   output logic [63:0] branch_target_IFP
 );
-  logic no_forwarding_data; 
-  assign no_forwarding_data = no_forwarding_data_IDR | no_forwarding_data_EXB | no_forwarding_data_MEMP;
-
   assign flush_IDC = branch_taken_EXB;
   assign flush_IDR = branch_taken_EXB;
   assign flush_IFR = branch_taken_EXB;

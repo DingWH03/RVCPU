@@ -121,9 +121,6 @@ assign  is_sra  = (opcode == 7'h33) && (funct3 ==3'h5) && (funct7 == 7'h20);
 assign  is_or   = (opcode == 7'h33) && (funct3 ==3'h6) && (funct7 == 7'h00);
 assign  is_and  = (opcode == 7'h33) && (funct3 ==3'h7) && (funct7 == 7'h00);
 
-assign is_rs1_used = is_r_type | is_i_type | is_b_type | is_s_type;
-assign is_rs2_used = is_r_type | is_b_type | is_s_type;
-
 assign  is_add_type = is_auipc | is_jal | is_jalr | is_b_type | is_s_type 
                     | is_lb | is_lh | is_lw | is_lbu | is_lhu | is_add | is_addi ;
 assign  is_u_type   = is_lui | is_auipc ;
@@ -131,13 +128,16 @@ assign  is_jump_type= is_jal ;
 assign  is_b_type   = is_beq | is_bne | is_blt | is_bge | is_bltu | is_bgeu ;
 assign  is_r_type   = is_add | is_sub | is_sll | is_slt | is_sltu | is_xor 
                     | is_srl | is_sra | is_or | is_and ;
-assign  is_i_type   = is_jalr | is_lb | is_lh | is_lw | is_lbu | is_lhu 
+assign  is_i_type   = is_jalr | is_ld | is_lb | is_lh | is_lw | is_lbu | is_lhu 
                     | is_addi | is_slti | is_sltiu | is_xori | is_ori | is_andi
                     | is_slli | is_srli | is_srai | is_ebreak | is_ecall;
-assign  is_s_type   = is_sb | is_sh | is_sw ;
+assign  is_s_type   = is_sd | is_sb | is_sh | is_sw ;
 //rf_wr_en  
 assign rf_wr_en     =  is_u_type | is_jump_type | is_i_type | is_r_type ;  
   
+assign is_rs1_used = is_r_type | is_i_type | is_b_type | is_s_type;
+assign is_rs2_used = is_r_type | is_b_type | is_s_type;
+
 //[1:0]rf_wr_sel
 always_comb begin
     if (is_jal | is_jalr) rf_wr_sel = 2'b01;

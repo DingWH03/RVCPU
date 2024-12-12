@@ -24,7 +24,7 @@ OUTPUT_DIR = output
 BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
-DEFINES_SRC = $(MODULES_DIR)/defines.v
+DEFINES_SRC = $(MODULES_DIR)/defines.sv
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
@@ -44,9 +44,10 @@ PIPELINE_SRC = $(PIPELINE_DIR)/pipeline_ifp_stage1.sv \
                 $(PIPELINE_DIR)/pipeline_idr_stage4.sv \
                 $(PIPELINE_DIR)/pipeline_exb_stage5.sv \
                 $(PIPELINE_DIR)/pipeline_exa_stage6.sv \
-                $(PIPELINE_DIR)/pipeline_memp_stage7.sv \
-                $(PIPELINE_DIR)/pipeline_memr_stage8.sv \
-                $(PIPELINE_DIR)/pipeline_wb_stage9.sv  \
+                $(PIPELINE_DIR)/pipeline_exc_stage7.sv \
+                $(PIPELINE_DIR)/pipeline_memp_stage8.sv \
+                $(PIPELINE_DIR)/pipeline_memr_stage9.sv \
+                $(PIPELINE_DIR)/pipeline_wb_stage10.sv  \
                 $(PIPELINE_DIR)/hazard.sv             \
                 $(PIPELINE_DIR)/forwarding.sv 
 RVCU_SRC = $(RVCU_DIR)/RVCPU.sv \

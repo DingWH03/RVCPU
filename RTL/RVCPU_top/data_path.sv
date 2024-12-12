@@ -32,7 +32,7 @@ module data_path(
 );
 // 各阶段PC值之间的传递
 logic [63:0] pc_ifp_to_ifr, pc_ifr_to_idc, pc_idc_to_idr, pc_idr_to_exb;
-logic [63:0] pc_exb_to_exa, pc_exa_to_memp, pc_memp_to_memr, pc_memr_to_wb;
+logic [63:0] pc_exb_to_exa, pc_exa_to_exc, pc_exc_to_memp, pc_memp_to_memr, pc_memr_to_wb;
 
 // hazard连接信号线定义
 logic branch_taken_EXB;
@@ -50,9 +50,7 @@ logic branch_taken_IFP;
 logic [63:0] branch_target_IFP;
 
 // forwarding连接信号线定义
-logic no_forwarding_data_IDR;
-logic no_forwarding_data_EXB;
-logic no_forwarding_data_MEMP;
+logic no_forwarding_data;
 logic [63:0] forward_rs1_data;
 logic [63:0] forward_rs2_data;
 logic forward_rs1_sel;
@@ -118,6 +116,16 @@ logic [2:0] dm_wr_ctrl_EXA;
 logic [63:0] reg_data2_EXA;
 logic [4:0] rd_EXA;
 
+// exc信号定义
+logic [63:0] pc_EXC;
+logic rf_wr_en_EXC;
+logic [1:0] rf_wr_sel_EXC;
+logic [63:0] alu_result_EXC;
+logic [2:0] dm_rd_ctrl_EXC;
+logic [2:0] dm_wr_ctrl_EXC;
+logic [63:0] reg_data2_EXC;
+logic [4:0] rd_EXC;
+
 // memp信号定义
 logic is_dram_MEMP;
 logic [1:0] rf_wr_sel_MEMP;
@@ -136,9 +144,7 @@ logic [4:0] rd_MEMR;
 hazard hazard0(
     .branch_taken_EXB(branch_taken_EXB),
     .branch_target_EXB(branch_target_EXB),
-    .no_forwarding_data_IDR(no_forwarding_data_IDR),
-    .no_forwarding_data_EXB(no_forwarding_data_EXB),
-    .no_forwarding_data_MEMP(no_forwarding_data_MEMP),
+    .no_forwarding_data(no_forwarding_data),
     .stall_IDR(stall_IDR),
     .stall_IDC(stall_IDC),
     .stall_IFR(stall_IFR),
@@ -156,32 +162,29 @@ hazard hazard0(
 forwarding forwarding0(
     .rs1_IDC(rs1_IDC),           // IDC阶段寄存器读取地址1
     .rs2_IDC(rs2_IDC),           // IDC阶段寄存器读取地址2
-    .rd_IDR(rd_IDR),            // EXA阶段目标寄存器地址
-    .rf_wr_en_IDR(rf_wr_en_IDR),      // EXA阶段寄存器写使能信号
-    .rd_EXB(rd_EXB),            // EXA阶段目标寄存器地址
-    .rf_wr_en_EXB(rf_wr_en_EXB),      // EXA阶段寄存器写使能信号
+    .rd_IDR(rd_IDR),            // IDR阶段目标寄存器地址
+    .rf_wr_en_IDR(rf_wr_en_IDR),      // IDR阶段寄存器写使能信号
+    .rd_EXB(rd_EXB),            // EXB阶段目标寄存器地址
+    .rf_wr_en_EXB(rf_wr_en_EXB),      // EXB阶段寄存器写使能信号
     .rd_EXA(rd_EXA),            // EXA阶段目标寄存器地址
-    .rf_wr_en_EXA(rf_wr_en_EXA),      // EXA阶段寄存器写使能信号
+    .rf_wr_sel_EXA(rf_wr_sel_EXA),      // EXA阶段寄存器写使能信号
     .alu_result_EXA(alu_result_EXA),    // EX阶段ALU结果
+    .rd_EXC(rd_EXC),            // EXC阶段目标寄存器地址
+    .rf_wr_sel_EXC(rf_wr_sel_EXC),      // EXC阶段寄存器写使能信号
+    .alu_result_EXC(alu_result_EXC),    // EX阶段ALU结果
     .pc_MEMP(pc_MEMP),           // MEMP阶段时钟到来前PC地址
     .rd_MEMP(rd_MEMP),           // MEMP阶段目标寄存器地址
-    .dm_rd_ctrl_MEMP(dm_rd_ctrl_EXA),   // MEMP阶段内存读控制信号
     .rf_wr_sel_MEMP(rf_wr_sel_MEMP),    // MEMP阶段数据选择信号
-    .rf_wr_en_MEMP(rf_wr_en_MEMP),     // MEMP阶段寄存器写使能信号
     .alu_result_MEMP(alu_result_MEMP),   // MEMP阶段传递的内存读取结果
     .pc_MEMR(pc_MEMR),           // MEMR阶段时钟到来前PC地址
     .rd_MEMR(rd_MEMR),           // MEMR阶段目标寄存器地址
-    .dm_rd_ctrl_MEMR(dram_rd_ctrl),   // MEMR阶段内存读控制信号
     .rf_wr_sel_MEMR(rf_wr_sel_MEMR),    // MEMR阶段数据选择信号
-    .rf_wr_en_MEMR(rf_wr_en_MEMR),     // MEMR阶段寄存器写使能信号
     .mem_data_MEMR(mem_data_MEM),     // MEMR阶段内存数据
     .alu_result_MEMR(alu_result_MEMR),   // MEMR阶段传递的内存读取结果
     .rd_WB(rd_WB),             // WB阶段目标寄存器地址
     .reg_write_WB(reg_write_WB),      // WB阶段寄存器写使能信号
     .write_data_WB(write_data_WB),     // WB阶段写入数据
-    .no_forwarding_data_IDR(no_forwarding_data_IDR),
-    .no_forwarding_data_EXB(no_forwarding_data_EXB),
-    .no_forwarding_data_MEMP(no_forwarding_data_MEMP),
+    .no_forwarding_data(no_forwarding_data),
     .forward_rs1_data(forward_rs1_data),  // 前递寄存器1数据
     .forward_rs2_data(forward_rs2_data),  // 前递寄存器2数据
     .forward_rs1_sel(forward_rs1_sel),   // 前递寄存器1数据选择信号
@@ -358,7 +361,7 @@ pipeline_exa_stage6 stage6(
     .dm_wr_ctrl_EXB(dm_wr_ctrl_EXB),             // 接收id阶段数据存储器写入控制信号
 
     // 输出到下一阶段
-    .pc_EXA(pc_exa_to_memp),                     // mem阶段输入pc
+    .pc_EXA(pc_exa_to_exc),                     // mem阶段输入pc
     .rf_wr_en_EXA(rf_wr_en_EXA),               // 从ID阶段传递的寄存器写使能信号
     .rf_wr_sel_EXA(rf_wr_sel_EXA),              // 转发寄存器写数据选择信号
     .alu_result_EXA(alu_result_EXA),             // ALU执行的结果
@@ -368,21 +371,43 @@ pipeline_exa_stage6 stage6(
     .rd_EXA(rd_EXA)                       // 转发到mem阶段的目的寄存器地址
 );
 
+pipeline_exc_stage7 stage7(
+    .clk(clk),
+    .reset(rst),
+    .stall(1'b0),
+    .pc_EXA(pc_exa_to_exc),
+    .rf_wr_en_EXA(rf_wr_en_EXA),
+    .rf_wr_sel_EXA(rf_wr_sel_EXA),
+    .alu_result_EXA(alu_result_EXA),
+    .dm_rd_ctrl_EXA(dm_rd_ctrl_EXA),
+    .dm_wr_ctrl_EXA(dm_wr_ctrl_EXA),
+    .reg_data2_EXA(reg_data2_EXA),
+    .rd_EXA(rd_EXA),
+    .pc_EXC(pc_exc_to_memp),
+    .rf_wr_en_EXC(rf_wr_en_EXC),
+    .rf_wr_sel_EXC(rf_wr_sel_EXC),
+    .alu_result_EXC(alu_result_EXC),
+    .dm_rd_ctrl_EXC(dm_rd_ctrl_EXC),
+    .dm_wr_ctrl_EXC(dm_wr_ctrl_EXC),
+    .reg_data2_EXC(reg_data2_EXC),
+    .rd_EXC(rd_EXC)
+);
+
 // 实例化 MEMP 阶段
-pipeline_memp_stage7 stage7(
+pipeline_memp_stage8 stage8(
     .clk(clk),                          // 时钟信号
     .reset(rst),                        // 复位信号，低电平有效
     .stall(1'b0),                        // 流水线暂停信号
 
     // 接收来自EX阶段的信号
-    .pc_EXA(pc_exa_to_memp),                       // 从EX阶段传递的PC值
-    .rf_wr_en_EXA(rf_wr_en_EXA),                 // EX阶段传递的寄存器写使能信号
-    .rf_wr_sel_EXA(rf_wr_sel_EXA),                // EX阶段传递的寄存器写数据选择信号
-    .alu_result_EXA(alu_result_EXA),               // 从EX阶段传递的ALU计算结果
-    .dm_rd_ctrl_EXA(dm_rd_ctrl_EXA),               // 内存读控制信号
-    .dm_wr_ctrl_EXA(dm_wr_ctrl_EXA),               // 内存写控制信号
-    .reg_data2_EXA(reg_data2_EXA),                // EX阶段传递的寄存器数据2
-    .rd_EXA(rd_EXA),                       // EX阶段传递的目的寄存器地址
+    .pc_EXC(pc_exc_to_memp),                       // 从EX阶段传递的PC值
+    .rf_wr_en_EXC(rf_wr_en_EXC),                 // EX阶段传递的寄存器写使能信号
+    .rf_wr_sel_EXC(rf_wr_sel_EXC),                // EX阶段传递的寄存器写数据选择信号
+    .alu_result_EXC(alu_result_EXC),               // 从EX阶段传递的ALU计算结果
+    .dm_rd_ctrl_EXC(dm_rd_ctrl_EXC),               // 内存读控制信号
+    .dm_wr_ctrl_EXC(dm_wr_ctrl_EXC),               // 内存写控制信号
+    .reg_data2_EXC(reg_data2_EXC),                // EX阶段传递的寄存器数据2
+    .rd_EXC(rd_EXC),                       // EX阶段传递的目的寄存器地址
 
     // 外设接口相关信号
     .sys_bus_addr(bus_addr),
@@ -406,7 +431,7 @@ pipeline_memp_stage7 stage7(
 );
 
 // 实例化 MEMR 阶段
-pipeline_memr_stage8 stage8(
+pipeline_memr_stage9 stage9(
     .clk(clk),                          // 时钟信号
     .reset(rst),                        // 复位信号，低电平有效
     .stall(1'b0),                        // 流水线暂停信号
@@ -434,7 +459,7 @@ pipeline_memr_stage8 stage8(
 );
 
 // 实例化 WB 阶段
-pipeline_wb_stage9 stage9 (
+pipeline_wb_stage10 stage10 (
     .clk(clk),                          // 时钟信号
     .reset(rst),                        // 复位信号
     .stall(1'b0),                        // 流水线暂停信号

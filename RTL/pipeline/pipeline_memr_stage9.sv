@@ -3,7 +3,7 @@
 // mem: yes
 // regs: no
 // 这阶段需要判断数据是否读取完毕，等缓存做出来了再完善
-module pipeline_memr_stage8 (
+module pipeline_memr_stage9 (
     input logic clk,                     // 时钟信号
     input logic reset,                   // 复位信号，低电平有效
     input logic stall,

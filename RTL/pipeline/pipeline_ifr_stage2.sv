@@ -2,7 +2,7 @@
 // 功能: 从5级流水线CPU中的指令预取阶段新增的指令预取就绪阶段 (Instruction Fetch Prepare Stage)
 // mem: no
 // regs: no
-`include "Modules/defines.v"
+`include "Modules/defines.sv"
 module pipeline_ifr_stage2 (
     input logic clk,               // 时钟信号
     input logic reset,             // 复位信号，低电平有效

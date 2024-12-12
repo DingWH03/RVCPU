@@ -3,7 +3,7 @@
 // mem: no
 // regs: yes
 
-module pipeline_wb_stage9 (
+module pipeline_wb_stage10 (
     input wire clk,                    // 时钟信号
     input wire reset,                  // 复位信号，低电平有效
     input wire stall,
