@@ -207,9 +207,9 @@ end
 
 // [2:0] dm_wr_ctrl
 always_comb begin
-    if (is_sb) dm_wr_ctrl = 3'b001;
-    else if (is_sh) dm_wr_ctrl = 3'b010;
-    else if (is_sw) dm_wr_ctrl = 3'b011;
+    if (is_sb) dm_wr_ctrl = 3'b001;//8 bit
+    else if (is_sh) dm_wr_ctrl = 3'b010;// 16 bit
+    else if (is_sw) dm_wr_ctrl = 3'b011;// 32bit
     else if (is_sd) dm_wr_ctrl = 3'b100;  // 新增64位存储控制
     else dm_wr_ctrl = 3'b000;  // 默认值
 end

@@ -28,6 +28,9 @@ end
 always @(posedge clk) begin
     if (write_en && (addr[30:12] == 19'b0)) begin
         data_mem[addr[13:3]] <= dm_din; // Write data
+        $display("WRITE to addr: %h, data: %h", addr, dm_din);
+    end else if (write_en) begin
+        $display("WRITE invalid addr: %h, data: %h", addr, dm_din);
     end
 end
 
