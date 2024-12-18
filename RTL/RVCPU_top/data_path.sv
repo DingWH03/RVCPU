@@ -16,6 +16,7 @@ module data_path(
     output logic [63:0] dram_addr,
     output logic [63:0] dram_din,
     input logic [63:0] dram_dout,
+    input logic [1:0] state,
 
     //--------------到rom的连线------------------------------
     output logic [63:0] rom_addr,
@@ -41,6 +42,11 @@ logic stall_IDR;
 logic stall_IDC;
 logic stall_IFR;
 logic stall_IFP;
+logic stall_EXB;
+logic stall_EXA;
+logic stall_EXC;
+logic stall_MEMP;
+logic stall_MEMR;
 logic nop_IDR;
 logic flush_IDC;
 logic flush_IDR;
@@ -145,10 +151,16 @@ hazard hazard0(
     .branch_taken_EXB(branch_taken_EXB),
     .branch_target_EXB(branch_target_EXB),
     .no_forwarding_data(no_forwarding_data),
+    .state(state),
     .stall_IDR(stall_IDR),
     .stall_IDC(stall_IDC),
     .stall_IFR(stall_IFR),
     .stall_IFP(stall_IFP),
+    .stall_EXB(stall_EXB),
+    .stall_EXA(stall_EXA),
+    .stall_EXC(stall_EXC),
+    .stall_MEMP(stall_MEMP),
+    .stall_MEMR(stall_MEMR),
     .flush_IDC(flush_IDC),
     .flush_IDR(flush_IDR),
     .flush_IFR(flush_IFR),
@@ -300,7 +312,7 @@ pipeline_exb_stage5 stage5(
     .clk(clk),                       // 时钟信号
     .reset(rst),                     // 复位信号，低电平有效
     .flush(flush_EXB),                     // 流水线冲刷信号
-    .stall(1'b0),                     // 流水线暂停信号
+    .stall(stall_EXB),                     // 流水线暂停信号
 
     // 传递的信号
     .pc_IDR(pc_idr_to_exb),                    // 从IDR阶段传递的PC值
@@ -344,7 +356,7 @@ pipeline_exb_stage5 stage5(
 pipeline_exa_stage6 stage6(
     .clk(clk),                         // 时钟信号
     .reset(rst),                       // 复位信号，低电平有效
-    .stall(1'b0),                       // 流水线暂停信号
+    .stall(stall_EXA),                       // 流水线暂停信号
 
     // 接收来自EXB阶段的信号
     .reg_data1_EXB(reg_data1_EXB),              // 从ID阶段传递的源操作数1
@@ -374,7 +386,7 @@ pipeline_exa_stage6 stage6(
 pipeline_exc_stage7 stage7(
     .clk(clk),
     .reset(rst),
-    .stall(1'b0),
+    .stall(stall_EXC),
     .pc_EXA(pc_exa_to_exc),
     .rf_wr_en_EXA(rf_wr_en_EXA),
     .rf_wr_sel_EXA(rf_wr_sel_EXA),
@@ -397,7 +409,7 @@ pipeline_exc_stage7 stage7(
 pipeline_memp_stage8 stage8(
     .clk(clk),                          // 时钟信号
     .reset(rst),                        // 复位信号，低电平有效
-    .stall(1'b0),                        // 流水线暂停信号
+    .stall(stall_MEMP),                        // 流水线暂停信号
 
     // 接收来自EX阶段的信号
     .pc_EXC(pc_exc_to_memp),                       // 从EX阶段传递的PC值
@@ -434,7 +446,7 @@ pipeline_memp_stage8 stage8(
 pipeline_memr_stage9 stage9(
     .clk(clk),                          // 时钟信号
     .reset(rst),                        // 复位信号，低电平有效
-    .stall(1'b0),                        // 流水线暂停信号
+    .stall(stall_MEMR),                        // 流水线暂停信号
 
     // 接收外设和内存读取数据
     .sys_bus_dout(bus_dout),                 // 从外设读取的数据

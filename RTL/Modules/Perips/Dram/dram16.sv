@@ -22,11 +22,11 @@ end
 always @(posedge clk) begin
     if (write_en) begin
         // 写入数据
-        data_mem[addr] <= mem; 
-        $display("WRITE to addr: %h, data: %h", addr, mem);
+        data_mem[addr] <= data; 
+        $display("WRITE to addr: %h, data: %h", addr, data);
     end
 end
 
 // 驱动或读取数据
-assign mem = write_en ? 16'bz : data_mem[addr]; // 高阻态用于读取
+assign data = write_en ? 16'bz : data_mem[addr]; // 高阻态用于读取
 endmodule

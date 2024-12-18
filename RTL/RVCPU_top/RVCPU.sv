@@ -16,6 +16,7 @@ wire [2:0] dm_wr_ctrl_mem;
 wire [63:0] dm_addr_mem;
 wire [63:0] dm_din_mem;
 wire [63:0] dm_dout_mem;
+wire [1:0] state;
 // ----------------------------------------------------------------
 
 // ------------sys_bus连接到uart-------------------------------
@@ -44,8 +45,8 @@ wire reg_write_WB;           // 使能控制信号
 // 连接dram和dram_ctrl的线路----------------------------------
 wire [63:0] dm_din_a;
 wire write_en;
-wire [63:0] addr_dram_ctrl;
-wire [63:0] mem_out;
+wire [18:0] addr_dram_ctrl;
+wire [15:0] data;
 // ----------------------------------------------------------
 
 // -------------------data_path-sys_bus-----------------------
@@ -72,14 +73,16 @@ wire [2:0] bus_wr_ctrl, bus_rd_ctrl;
 //     output wire [63:0] addr
 // );
 dram_ctrl dram_ctrl0(
+    .clk(clk),
+    .rst(rst),
     .dm_rd_ctrl(dm_rd_ctrl_mem),
     .dm_wr_ctrl(dm_wr_ctrl_mem),
     .dm_addr(dm_addr_mem),
     .dm_din(dm_din_mem),
     .dm_dout(dm_dout_mem),
-    .mem_out(mem_out),
+    .state(state),
+    .data(data),
     .write_en(write_en),
-    .dm_din_a(dm_din_a),
     .addr(addr_dram_ctrl)
 );
 
@@ -87,9 +90,8 @@ dram_ctrl dram_ctrl0(
 dram dram0 (
     .clk(clk),
     .addr(addr_dram_ctrl),
-    .dm_din(dm_din_a),
     .write_en(write_en),
-    .mem_out(mem_out)
+    .data(data)
 );
 
 // 初始化rom实例
@@ -244,6 +246,7 @@ data_path data_path0(
     .dram_addr(dm_addr_mem),
     .dram_din(dm_din_mem),
     .dram_dout(dm_dout_mem),
+    .state(state),
     .rom_addr(im_addr_mem0),
     .rom_dout(im_dout_mem0),
     .data_reg_read_1(data_reg_read_1),

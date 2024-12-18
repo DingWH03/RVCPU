@@ -28,9 +28,9 @@ DEFINES_SRC = $(MODULES_DIR)/defines.sv
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
-            $(CTRL_DIR)/dram_ctrl.v
+            $(CTRL_DIR)/dram_ctrl.sv
 IMM_SRC = $(IMM_DIR)/imm.v
-DRAM_SRC = $(DRAM_DIR)/dram.v
+DRAM_SRC = $(DRAM_DIR)/dram16.sv
 ROM_SRC = $(ROM_DIR)/rom.v
 REGFILE_SRC = $(REGFILE_DIR)/regfileI.v 
 UART_SRC = $(UART_DIR)/uart.v \
