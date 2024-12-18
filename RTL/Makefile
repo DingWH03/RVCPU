@@ -4,6 +4,7 @@ CXX = g++
 
 # Directories
 SRC_DIR = .
+INCLUDE_DIR = $(SRC_DIR)/include
 MODULES_DIR = $(SRC_DIR)/Modules
 PERIPS_DIR = $(MODULES_DIR)/Perips
 CORE_DIR = $(MODULES_DIR)/Core
@@ -17,14 +18,14 @@ REGFILE_DIR = $(CORE_DIR)/RegisterFile
 UART_DIR = $(PERIPS_DIR)/UART
 GPIO_DIR = $(PERIPS_DIR)/GPIO
 SYS_BUS_DIR = $(MODULES_DIR)/Sys_bus
-RVCU_DIR = $(SRC_DIR)/RVCPU_top
+RVCU_DIR = $(SRC_DIR)/top
 PIPELINE_DIR = $(SRC_DIR)/pipeline
 TB_CPP_DIR = $(SRC_DIR)/tb_cpp
 OUTPUT_DIR = output
 BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
-DEFINES_SRC = $(MODULES_DIR)/defines.sv
+DEFINES_SRC = $(INCLUDE_DIR)/defines.sv
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \

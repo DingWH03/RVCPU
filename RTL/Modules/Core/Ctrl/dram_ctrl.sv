@@ -1,5 +1,5 @@
 `timescale 1ns / 1ns
-`include "Modules/defines.sv"
+`include "include/defines.sv"
 
 module dram_ctrl(
     input  logic         clk,
@@ -29,8 +29,8 @@ logic [1:0] read_count;   // 读操作计数器
 logic [15:0] wr_data;     // 当前写入的数据
 logic [63:0] data_buffer; // 数据缓冲区
 logic [63:0] rd_data;     // 读出的数据
-logic [63:0] dm_addr_reg;
-logic [63:0] dm_din_reg;
+logic [63:0] dm_addr_reg; // 锁存一下数据，防止数据只送进来一周期丢失数据
+logic [63:0] dm_din_reg; // 锁存一下数据，防止数据只送进来一周期丢失数据
 logic [19:0] state_addr;
 
 // 地址转换
