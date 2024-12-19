@@ -26,7 +26,8 @@ BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
 DEFINES_SRC = $(INCLUDE_DIR)/defines.sv
-ALU_SRC = $(ALU_DIR)/ALU.v
+ALU_SRC = $(ALU_DIR)/ALU.v \
+            $(ALU_DIR)/mALU.sv
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
             $(CTRL_DIR)/dram_ctrl.sv \

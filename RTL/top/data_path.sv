@@ -132,6 +132,7 @@ logic [4:0] rd_EXA;
 // exc信号定义
 logic [63:0] pc_EXC;
 logic rf_wr_en_EXC;
+logic mALU_runing;
 logic [1:0] rf_wr_sel_EXC;
 logic [63:0] alu_result_EXC;
 logic [2:0] dm_rd_ctrl_EXC;
@@ -159,6 +160,7 @@ hazard hazard0(
     .branch_target_EXB(branch_target_EXB),
     .no_forwarding_data(no_forwarding_data),
     .state(state),
+    .mALU_runing(mALU_runing),
     .stall_IDR(stall_IDR),
     .stall_IDC(stall_IDC),
     .stall_IFR(stall_IFR),
@@ -406,6 +408,7 @@ pipeline_exc_stage7 stage7(
     .alu_ctrl_EXA(alu_ctrl_EXA),
     .reg_data1_EXA(reg_data1_EXA),
     .m_sel_EXA(m_sel_EXA),
+    .mALU_runing(mALU_runing),
     .pc_EXA(pc_exa_to_exc),
     .rf_wr_en_EXA(rf_wr_en_EXA),
     .rf_wr_sel_EXA(rf_wr_sel_EXA),

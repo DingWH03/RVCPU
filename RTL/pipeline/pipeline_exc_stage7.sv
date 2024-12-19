@@ -12,6 +12,7 @@ module pipeline_exc_stage7(
     input logic [3:0] alu_ctrl_EXA,
     input logic [63:0] reg_data1_EXA,// 转发到mem阶段
     input logic m_sel_EXA,
+    output logic mALU_runing,
 
     // 下面是转发exa阶段的数据input
     input logic [63:0] pc_EXA,               // mem阶段输入pc
@@ -38,7 +39,38 @@ module pipeline_exc_stage7(
     output logic [4:0] rd_EXC        // 转发到mem阶段
 
 );
+    logic [127:0] mALU_result;
+    logic signed_a, signed_b;
+    logic start;
+    logic ready;
 
+    assign mALU_runing = start & !ready;
+    always_comb begin
+        if(m_sel_EXA)begin
+            case (alu_ctrl_EXA)
+                4'b0001: begin
+                    signed_a = 1;
+                    signed_b = 1;
+                    start = 1;
+                end
+                default: begin
+                    start = 0;
+                end
+            endcase
+        end
+    end
+
+    mALU malu(
+        .rst(rst),
+        .clk(clk),
+        .a({64{m_sel_EXA}}&reg_data1_EXA),
+        .b({64{m_sel_EXA}}&reg_data2_EXA),
+        .signed_a(m_sel_EXA&signed_a),
+        .signed_b(m_sel_EXA&signed_b),
+        .start(start),
+        .result(mALU_result),
+        .ready(ready)
+    );
 
 
     // 传递信号到下一周期
