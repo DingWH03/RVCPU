@@ -8,6 +8,7 @@ module pipeline_exa_stage6 (
     input logic reset,                // 复位信号，低电平有效
     // input logic flush,           // 在分支模块之后，不需要冲刷
     input logic stall,            // 流水线暂停信号
+    input logic m_sel_EXB,
     input logic [63:0] reg_data1_EXB,  // 从ID阶段传递的源操作数1
     input logic [63:0] reg_data2_EXB,  // 从ID阶段传递的源操作数2
     input logic [63:0] imm_EXB,        // 从ID阶段传递的立即数
@@ -22,6 +23,7 @@ module pipeline_exa_stage6 (
     input logic [2:0] dm_rd_ctrl_EXB,  // 接受id阶段数据存储器读取控制信号
     input logic [2:0] dm_wr_ctrl_EXB,  // 接受id阶段数据存储器写入控制信号
 
+    output logic m_sel_EXA,
     output logic [63:0] pc_EXA,               // mem阶段输入pc
     output logic rf_wr_en_EXA,          // 从ID阶段传递的寄存器写使能信号，需要传递到wb阶段
     output logic [1:0] rf_wr_sel_EXA,        // 从ID阶段传递的寄存器写数据选择信号，需要传递到wb阶段
@@ -30,6 +32,8 @@ module pipeline_exa_stage6 (
 
     output logic [2:0] dm_rd_ctrl_EXA, // 转发读取控制信号
     output logic [2:0] dm_wr_ctrl_EXA, // 转发写入控制信号
+    output logic [3:0] alu_ctrl_EXA, 
+    output logic [63:0] reg_data1_EXA,// 转发到mem阶段
     output logic [63:0] reg_data2_EXA,// 转发到mem阶段
     output logic [4:0] rd_EXA        // 转发到mem阶段
 );
@@ -47,9 +51,9 @@ module pipeline_exa_stage6 (
 
     // 实例化 ALU 模块
     ALU alu0(
-        .SrcA(alu_input1),
-        .SrcB(alu_input2),
-        .func(alu_ctrl_EXB),
+        .SrcA(m_sel_EXB ? 64'b0 : alu_input1),
+        .SrcB(m_sel_EXB ? 64'b0 : alu_input2),
+        .func(m_sel_EXB ? 4'b0 : alu_ctrl_EXB),
         .ALUout(alu_result)
     );
 
@@ -64,6 +68,9 @@ module pipeline_exa_stage6 (
             rd_EXA <= 0;
             rf_wr_en_EXA <= 0;
             rf_wr_sel_EXA <= 0;
+            m_sel_EXA <= 0;
+            reg_data1_EXA <= 0;
+            alu_ctrl_EXA <= 0;
         end else if(~stall) begin
             // ALU结果在时钟上升沿更新
             alu_result_EXA <= alu_result;
@@ -74,6 +81,9 @@ module pipeline_exa_stage6 (
             rd_EXA <= rd_EXB;
             rf_wr_en_EXA <= rf_wr_en_EXB;
             rf_wr_sel_EXA <= rf_wr_sel_EXB;
+            m_sel_EXA <= m_sel_EXB;
+            reg_data1_EXA <= reg_data1_EXB;
+            alu_ctrl_EXA <= alu_ctrl_EXB;
         end
     end
 

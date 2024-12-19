@@ -10,6 +10,7 @@ module pipeline_exb_stage5 (
     input logic stall,            // 流水线暂停信号
 
     //--------------------------需要传递的信号-------------------------------------
+    input logic m_sel_IDR,
     input logic [63:0] pc_IDR,         // 从IDR阶段传递的PC值
     input logic [63:0] reg_data1_IDR,  // 从IDR阶段传递的源操作数1
     input logic [63:0] reg_data2_IDR,  // 从IDR阶段传递的源操作数2
@@ -37,6 +38,7 @@ module pipeline_exb_stage5 (
     //--------------------------------------------------------------------------------------
 
     //--------------------------------传出的信号-------------------------------------------
+    output logic m_sel_EXB,
     output logic [63:0] pc_EXB,               // exa阶段输入pc
     output logic [63:0] reg_data1_EXB,// 转发到exa阶段
     output logic [63:0] reg_data2_EXB,// 转发到exa阶段
@@ -81,6 +83,7 @@ module pipeline_exb_stage5 (
             alu_ctrl_EXB <= 0;
             alu_a_sel_EXB <= 0;
             alu_b_sel_EXB <= 0;
+            m_sel_EXB <= 0;
         end else if(~stall) begin
             // 转发到exa在时钟上升沿更新
             pc_EXB <= pc_IDR;
@@ -95,6 +98,7 @@ module pipeline_exb_stage5 (
             alu_ctrl_EXB <= alu_ctrl_IDR;
             alu_a_sel_EXB <= alu_a_sel_IDR;
             alu_b_sel_EXB <= alu_b_sel_IDR;
+            m_sel_EXB <= m_sel_IDR;
         end
     end
 

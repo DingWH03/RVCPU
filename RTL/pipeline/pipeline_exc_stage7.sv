@@ -8,6 +8,11 @@ module pipeline_exc_stage7(
     input logic reset,                // 复位信号，低电平有效
     input logic stall,
 
+    // exc阶段本职工作（乘除法）
+    input logic [3:0] alu_ctrl_EXA,
+    input logic [63:0] reg_data1_EXA,// 转发到mem阶段
+    input logic m_sel_EXA,
+
     // 下面是转发exa阶段的数据input
     input logic [63:0] pc_EXA,               // mem阶段输入pc
     input logic rf_wr_en_EXA,          // 从ID阶段传递的寄存器写使能信号，需要传递到wb阶段
@@ -33,6 +38,8 @@ module pipeline_exc_stage7(
     output logic [4:0] rd_EXC        // 转发到mem阶段
 
 );
+
+
 
     // 传递信号到下一周期
     always_ff @(posedge clk or negedge reset) begin

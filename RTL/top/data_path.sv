@@ -78,6 +78,7 @@ logic alu_a_sel;
 logic alu_b_sel;
 logic is_rs1_used;
 logic is_rs2_used;
+logic m_sel;
 logic [3:0] alu_ctrl;
 logic [2:0] BrType;
 logic [1:0] rf_wr_sel;
@@ -94,6 +95,7 @@ logic do_jump_IDR;
 logic is_branch_IDR;
 logic alu_a_sel_IDR;
 logic alu_b_sel_IDR;
+logic m_sel_IDR;
 logic [3:0] alu_ctrl_IDR;
 logic [2:0] BrType_IDR;
 logic [1:0] rf_wr_sel_IDR;
@@ -109,16 +111,21 @@ logic [1:0] rf_wr_sel_EXB;
 logic [3:0] alu_ctrl_EXB;
 logic alu_a_sel_EXB;
 logic alu_b_sel_EXB;
+logic m_sel_EXB;
 logic [2:0] dm_rd_ctrl_EXB;
 logic [2:0] dm_wr_ctrl_EXB;
 logic [4:0] rd_EXB;
 
 // exa信号定义
+logic m_sel_EXA;
+logic [3:0] alu_ctrl_EXA;
+
 logic rf_wr_en_EXA;
 logic [1:0] rf_wr_sel_EXA;
 logic [63:0] alu_result_EXA;
 logic [2:0] dm_rd_ctrl_EXA;
 logic [2:0] dm_wr_ctrl_EXA;
+logic [63:0] reg_data1_EXA;
 logic [63:0] reg_data2_EXA;
 logic [4:0] rd_EXA;
 
@@ -254,6 +261,7 @@ pipeline_idc_stage3 stage3(
     .alu_ctrl(alu_ctrl),                  // ALU 控制信号
     .BrType(BrType),                    // 分支类型控制信号
     .rf_wr_sel(rf_wr_sel),                 // 寄存器写回数据来源选择
+    .m_sel(m_sel),
     .dm_rd_ctrl(dm_rd_ctrl),                // 数据存储器读取控制信号
     .dm_wr_ctrl(dm_wr_ctrl),                // 数据存储器写入控制信号
     .rs1_IDC(rs1_IDC),                   // 读取寄存器堆数据的地址1
@@ -270,6 +278,7 @@ pipeline_idr_stage4 stage4(
     .pc_IDC(pc_idc_to_idr),                    // 从IDC阶段传来的PC值
     .rs1_IDC(rs1_IDC),                   // 读取寄存器地址1
     .rs2_IDC(rs2_IDC),                   // 读取寄存器地址2
+    .m_sel(m_sel),
     .rd_ID(rd_ID),                     // 目的寄存器地址
     .imm_ID(imm_ID),                     // 解码出的立即数
     .rf_wr_en(rf_wr_en),                  // 寄存器写使能信号
@@ -291,6 +300,7 @@ pipeline_idr_stage4 stage4(
     .pc_IDR(pc_idr_to_exb),                   // IDR阶段的PC值
     .reg_data1_IDR(reg_data1_IDR),            // 解码出的源操作数1
     .reg_data2_IDR(reg_data2_IDR),            // 解码出的源操作数2
+    .m_sel_IDR(m_sel_IDR),
     .rd_IDR(rd_IDR),                   // 目的寄存器地址
     .imm_IDR(imm_IDR),                  // 解码出的立即数
     .rf_wr_en_IDR(rf_wr_en_IDR),             // 寄存器写使能信号
@@ -315,6 +325,7 @@ pipeline_exb_stage5 stage5(
     .stall(stall_EXB),                     // 流水线暂停信号
 
     // 传递的信号
+    .m_sel_IDR(m_sel_IDR),
     .pc_IDR(pc_idr_to_exb),                    // 从IDR阶段传递的PC值
     .reg_data1_IDR(reg_data1_IDR),             // 从IDR阶段传递的源操作数1
     .reg_data2_IDR(reg_data2_IDR),             // 从IDR阶段传递的源操作数2
@@ -338,6 +349,7 @@ pipeline_exb_stage5 stage5(
     .branch_target_EXB(branch_target_EXB),          // 分支跳转目标地址
 
     // 输出到下一阶段的信号
+    .m_sel_EXB(m_sel_EXB),
     .pc_EXB(pc_exb_to_exa),                     // exb阶段输入pc
     .reg_data1_EXB(reg_data1_EXB),              // 转发到exa阶段的源操作数1
     .reg_data2_EXB(reg_data2_EXB),              // 转发到exa阶段的源操作数2
@@ -359,6 +371,7 @@ pipeline_exa_stage6 stage6(
     .stall(stall_EXA),                       // 流水线暂停信号
 
     // 接收来自EXB阶段的信号
+    .m_sel_EXB(m_sel_EXB),
     .reg_data1_EXB(reg_data1_EXB),              // 从ID阶段传递的源操作数1
     .reg_data2_EXB(reg_data2_EXB),              // 从ID阶段传递的源操作数2
     .imm_EXB(imm_EXB),                    // 从ID阶段传递的立即数
@@ -373,12 +386,15 @@ pipeline_exa_stage6 stage6(
     .dm_wr_ctrl_EXB(dm_wr_ctrl_EXB),             // 接收id阶段数据存储器写入控制信号
 
     // 输出到下一阶段
+    .m_sel_EXA(m_sel_EXA),
     .pc_EXA(pc_exa_to_exc),                     // mem阶段输入pc
     .rf_wr_en_EXA(rf_wr_en_EXA),               // 从ID阶段传递的寄存器写使能信号
     .rf_wr_sel_EXA(rf_wr_sel_EXA),              // 转发寄存器写数据选择信号
     .alu_result_EXA(alu_result_EXA),             // ALU执行的结果
     .dm_rd_ctrl_EXA(dm_rd_ctrl_EXA),             // 转发读取控制信号
     .dm_wr_ctrl_EXA(dm_wr_ctrl_EXA),             // 转发写入控制信号
+    .alu_ctrl_EXA(alu_ctrl_EXA),
+    .reg_data1_EXA(reg_data1_EXA), 
     .reg_data2_EXA(reg_data2_EXA),              // 转发到mem阶段
     .rd_EXA(rd_EXA)                       // 转发到mem阶段的目的寄存器地址
 );
@@ -387,6 +403,9 @@ pipeline_exc_stage7 stage7(
     .clk(clk),
     .reset(rst),
     .stall(stall_EXC),
+    .alu_ctrl_EXA(alu_ctrl_EXA),
+    .reg_data1_EXA(reg_data1_EXA),
+    .m_sel_EXA(m_sel_EXA),
     .pc_EXA(pc_exa_to_exc),
     .rf_wr_en_EXA(rf_wr_en_EXA),
     .rf_wr_sel_EXA(rf_wr_sel_EXA),

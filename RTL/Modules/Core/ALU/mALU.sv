@@ -5,10 +5,23 @@ module mALU #(
     input logic                  reset,
     input logic [WIDTH-1:0]      a,      // 输入操作数 A
     input logic [WIDTH-1:0]      b,      // 输入操作数 B
+    input logic signed_a,
+    input logic signed_b,
     input logic                  start,  // 启动信号
     output logic [2*WIDTH-1:0]   result, // 输出结果
     output logic                 ready   // 结果就绪信号
 );
+
+    logic [WIDTH-1:0] a_abs, b_abs; // 绝对值
+    logic a_sign, b_sign; // 输入符号
+
+    assign a_sign = signed_a && a[WIDTH-1];
+    assign b_sign = signed_b && b[WIDTH-1];
+    assign a_abs = a_sign ? (~a + 1'b1) : a; // 取补码或原值
+    assign b_abs = b_sign ? (~b + 1'b1) : b;
+
+    logic result_sign; // 结果符号
+    assign result_sign = (signed_a && signed_b) && (a_sign ^ b_sign); // 异或判断符号
 
     // 部分积寄存器：动态更新，减少寄存器占用
     logic [2*WIDTH-1:0] partial_products [0:WIDTH-1];
@@ -24,7 +37,7 @@ module mALU #(
             valid_stage[0] <= 1'b0;
         end else if (start) begin
             for (int i = 0; i < WIDTH; i++) begin
-                partial_products[i] <= a[i] ? (b << i) : 0;
+                partial_products[i] <= a_abs[i] ? (b_abs << i) : 0;
             end
             valid_stage[0] <= 1'b1;
         end
@@ -61,7 +74,7 @@ module mALU #(
             result <= '0';
             ready <= 1'b0;
         end else if (valid_stage[$clog2(WIDTH)]) begin
-            result <= sum_stage[0] + sum_stage[1];
+            result <= result_sign ? (~(sum_stage[0] + sum_stage[1]) + 1'b1) : (sum_stage[0] + sum_stage[1]);
             ready <= 1'b1;
         end else begin
             ready <= 1'b0;

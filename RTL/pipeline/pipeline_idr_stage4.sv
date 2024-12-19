@@ -15,6 +15,7 @@ module pipeline_idr_stage4 (
     input logic [4:0] rs1_IDC, rs2_IDC, // 读取寄存器地址
     input logic is_rs1_used, is_rs2_used,
     //下面是只需要传递的信号
+    input logic m_sel,                // 是否乘除法alu选择信号
     input logic [4:0] rd_ID,          // 目的寄存器地址
     input logic [63:0] imm_ID,        // 解码出的立即数
     input logic rf_wr_en,             // 寄存器写使能信号
@@ -44,6 +45,7 @@ module pipeline_idr_stage4 (
     output logic [63:0] reg_data2_IDR,  // 解码出的源操作数2
 
     // IDR阶段锁存后面阶段需要使用的信号
+    output logic m_sel_IDR,                 // 是否乘除法alu选择信号
     output logic [4:0] rd_IDR,          // 目的寄存器地址
     output logic [63:0] imm_IDR,        // 解码出的立即数
     output logic rf_wr_en_IDR,             // 寄存器写使能信号
@@ -82,6 +84,7 @@ module pipeline_idr_stage4 (
             dm_wr_ctrl_IDR <= 3'b0;
             rs1_IDR <= 0;
             rs2_IDR <= 0;
+            m_sel_IDR <= 0;
 
         end else if (~stall&flush) begin
             // 复位时清空寄存器
@@ -102,25 +105,28 @@ module pipeline_idr_stage4 (
             dm_wr_ctrl_IDR <= 3'b0;
             rs1_IDR <= 0;
             rs2_IDR <= 0;
+            m_sel_IDR <= 0;
+
         end else if (~stall & nop) begin
-        // nop 插入气泡
-        pc_IDR <= 64'b0; // 或根据需要设置特殊的NOP值
-        reg_data1_IDR <= 64'b0;
-        reg_data2_IDR <= 64'b0;
-        rd_IDR <= 5'b0;
-        imm_IDR <= 64'b0;
-        rf_wr_en_IDR <= 0;
-        do_jump_IDR <= 0;
-        is_branch_IDR <= 0;
-        alu_a_sel_IDR <= 0;
-        alu_b_sel_IDR <= 0;
-        alu_ctrl_IDR <= 4'b0;
-        BrType_IDR <= 3'b0;
-        rf_wr_sel_IDR <= 2'b0;
-        dm_rd_ctrl_IDR <= 3'b0;
-        dm_wr_ctrl_IDR <= 3'b0;
-        rs1_IDR <= 0;
-        rs2_IDR <= 0;
+            // nop 插入气泡
+            pc_IDR <= 64'b0; // 或根据需要设置特殊的NOP值
+            reg_data1_IDR <= 64'b0;
+            reg_data2_IDR <= 64'b0;
+            rd_IDR <= 5'b0;
+            imm_IDR <= 64'b0;
+            rf_wr_en_IDR <= 0;
+            do_jump_IDR <= 0;
+            is_branch_IDR <= 0;
+            alu_a_sel_IDR <= 0;
+            alu_b_sel_IDR <= 0;
+            alu_ctrl_IDR <= 4'b0;
+            BrType_IDR <= 3'b0;
+            rf_wr_sel_IDR <= 2'b0;
+            dm_rd_ctrl_IDR <= 3'b0;
+            dm_wr_ctrl_IDR <= 3'b0;
+            rs1_IDR <= 0;
+            rs2_IDR <= 0;
+            m_sel_IDR <= 0;
 
         end else if(~stall) begin
             pc_IDR <= pc_IDC;
@@ -140,6 +146,7 @@ module pipeline_idr_stage4 (
             dm_wr_ctrl_IDR <= dm_wr_ctrl;
             rs1_IDR <= rs1_IDC;
             rs2_IDR <= rs2_IDC;
+            m_sel_IDR <= m_sel;
         
         end
 

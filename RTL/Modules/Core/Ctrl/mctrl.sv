@@ -69,7 +69,7 @@ always_comb begin
     if (is_mw_type | is_m_type) begin
         alu_ctrl[2:0] = funct3;
     end else begin
-        alu_ctrl = 3'b000;
+        alu_ctrl[2:0] = 3'b000;
     end
 end
 

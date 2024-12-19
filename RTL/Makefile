@@ -29,7 +29,8 @@ DEFINES_SRC = $(INCLUDE_DIR)/defines.sv
 ALU_SRC = $(ALU_DIR)/ALU.v
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
-            $(CTRL_DIR)/dram_ctrl.sv
+            $(CTRL_DIR)/dram_ctrl.sv \
+            $(CTRL_DIR)/mctrl.sv
 IMM_SRC = $(IMM_DIR)/imm.v
 DRAM_SRC = $(DRAM_DIR)/dram16.sv
 ROM_SRC = $(ROM_DIR)/rom.v

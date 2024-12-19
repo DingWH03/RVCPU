@@ -28,6 +28,7 @@ module pipeline_idc_stage3 (
     output logic [1:0] rf_wr_sel,      // 寄存器写回数据来源选择
     output logic is_rs1_used,
     output logic is_rs2_used,
+    output logic m_sel,                // 是否乘除法alu选择信号
 
     // 与内存模块连接的控制信号 (需要越过ex传递到mem阶段)
     output logic [2:0] dm_rd_ctrl,     // 数据存储器读取控制信号
@@ -37,34 +38,51 @@ module pipeline_idc_stage3 (
 );
 
     // 实例化立即数解码模块
-    logic [63:0] imm_wire;
+    logic [63:0] imm_ictrl;
     imm imm0 (
         .inst(instruction_IF),
-        .out(imm_wire)
+        .out(imm_ictrl)
     );
 
-    // 实例化控制单元模块
-    logic rf_wr_en_wire, do_jump_wire, is_branch_wire, alu_a_sel_wire, alu_b_sel_wire;
-    logic [3:0] alu_ctrl_wire;
-    logic [2:0] BrType_wire, dm_rd_ctrl_wire;
-    logic [1:0] rf_wr_sel_wire;
-    logic [2:0] dm_wr_ctrl_wire;
+    // 实例化ictrl控制单元模块
+    logic rf_wr_en_ictrl, do_jump_ictrl, is_branch_ictrl, alu_a_sel_ictrl, alu_b_sel_ictrl;
+    logic [3:0] alu_ctrl_ictrl;
+    logic [2:0] BrType_ictrl, dm_rd_ctrl_ictrl;
+    logic [1:0] rf_wr_sel_ictrl;
+    logic [2:0] dm_wr_ctrl_ictrl;
 
-    ctrl control_unit (
+    ctrl ctrli (
         .inst(instruction_IF),
-        .rf_wr_en(rf_wr_en_wire),
-        .rf_wr_sel(rf_wr_sel_wire),
-        .do_jump(do_jump_wire),
-        .is_branch(is_branch_wire),
-        .BrType(BrType_wire),
-        .alu_a_sel(alu_a_sel_wire),
-        .alu_b_sel(alu_b_sel_wire),
-        .alu_ctrl(alu_ctrl_wire),
-        .dm_rd_ctrl(dm_rd_ctrl_wire),
-        .dm_wr_ctrl(dm_wr_ctrl_wire),
+        .rf_wr_en(rf_wr_en_ictrl),
+        .rf_wr_sel(rf_wr_sel_ictrl),
+        .do_jump(do_jump_ictrl),
+        .is_branch(is_branch_ictrl),
+        .BrType(BrType_ictrl),
+        .alu_a_sel(alu_a_sel_ictrl),
+        .alu_b_sel(alu_b_sel_ictrl),
+        .alu_ctrl(alu_ctrl_ictrl),
+        .dm_rd_ctrl(dm_rd_ctrl_ictrl),
+        .dm_wr_ctrl(dm_wr_ctrl_ictrl),
         .is_debug(is_debug),
         .is_rs1_used(is_rs1_used),
         .is_rs2_used(is_rs2_used)
+    );
+
+    // 实例化ictrl控制单元模块
+    logic rf_wr_en_mctrl;
+    logic [1:0] rf_wr_sel_mctrl;
+    logic alu_a_sel_mctrl, alu_b_sel_mctrl;
+    logic [3:0] alu_ctrl_mctrl;
+    logic m_sel_mctrl;
+
+    mctrl ctrlm(
+        .inst(instruction_IF),
+        .rf_wr_en(rf_wr_en_mctrl),
+        .rf_wr_sel(rf_wr_sel_mctrl),
+        .alu_a_sel(alu_a_sel_mctrl),
+        .alu_b_sel(alu_b_sel_mctrl),
+        .alu_ctrl(alu_ctrl_mctrl),
+        .m_sel(m_sel_mctrl)
     );
 
     // 时钟上升沿的逻辑，用于锁存信号
@@ -72,6 +90,7 @@ module pipeline_idc_stage3 (
         if (reset||flush) begin
             // 复位时清空寄存器
             rd_ID          <= 5'b0;
+            m_sel          <= 0;
             rf_wr_en       <= 1'b0;
             do_jump        <= 1'b0;
             is_branch      <= 1'b0;
@@ -93,19 +112,20 @@ module pipeline_idc_stage3 (
             // 锁存寄存器地址和立即数
             rs1_IDC <= instruction_IF[19:15];  // rs1地址
             rs2_IDC <= instruction_IF[24:20];  // rs2地址
-            imm_ID <= imm_wire;
+            imm_ID <= imm_ictrl;
 
             // 锁存控制信号
-            rf_wr_en       <= rf_wr_en_wire;
-            do_jump        <= do_jump_wire;
-            is_branch      <= is_branch_wire;
-            alu_a_sel      <= alu_a_sel_wire;
-            alu_b_sel      <= alu_b_sel_wire;
-            alu_ctrl       <= alu_ctrl_wire;
-            BrType         <= BrType_wire;
-            rf_wr_sel      <= rf_wr_sel_wire;
-            dm_rd_ctrl     <= dm_rd_ctrl_wire;
-            dm_wr_ctrl     <= dm_wr_ctrl_wire;
+            m_sel          <= m_sel_mctrl;
+            rf_wr_en       <= m_sel_mctrl ? rf_wr_en_mctrl : rf_wr_en_ictrl;
+            do_jump        <= do_jump_ictrl;
+            is_branch      <= is_branch_ictrl;
+            alu_a_sel      <= m_sel_mctrl ? alu_a_sel_mctrl : alu_a_sel_ictrl;
+            alu_b_sel      <= m_sel_mctrl ? alu_b_sel_mctrl : alu_b_sel_ictrl;
+            alu_ctrl       <= m_sel_mctrl ? alu_ctrl_mctrl : alu_ctrl_ictrl;
+            BrType         <= BrType_ictrl;
+            rf_wr_sel      <= m_sel_mctrl ? rf_wr_sel_mctrl : rf_wr_sel_ictrl;
+            dm_rd_ctrl     <= dm_rd_ctrl_ictrl;
+            dm_wr_ctrl     <= dm_wr_ctrl_ictrl;
 
             pc_IDC         <= pc_IFR;
         end
