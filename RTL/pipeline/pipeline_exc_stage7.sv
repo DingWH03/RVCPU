@@ -43,15 +43,35 @@ module pipeline_exc_stage7(
     logic signed_a, signed_b;
     logic start;
     logic ready;
+    logic result_high;
 
     assign mALU_runing = start & !ready;
     always_comb begin
         if(m_sel_EXA)begin
             case (alu_ctrl_EXA)
+                4'b0000: begin
+                    signed_a = 1;
+                    signed_b = 1;
+                    start = 1;
+                    result_high = 0;
+                end
                 4'b0001: begin
                     signed_a = 1;
                     signed_b = 1;
                     start = 1;
+                    result_high = 1;
+                end
+                4'b0010: begin
+                    signed_a = 1;
+                    signed_b = 0;
+                    start = 1;
+                    result_high = 1;
+                end
+                4'b0011: begin
+                    signed_a = 0;
+                    signed_b = 0;
+                    start = 1;
+                    result_high = 1;
                 end
                 default: begin
                     start = 0;
