@@ -42,7 +42,7 @@ wire [4:0] rd_WB;            // 地址信号
 wire reg_write_WB;           // 使能控制信号
 // -------------------------------------------------------------
 
-// 连接dram和dram_ctrl的线路----------------------------------
+// --------------------连接dram和dram_ctrl的线路----------------------------------
 wire [63:0] dm_din_a;
 wire write_en;
 wire output_en;
@@ -52,6 +52,17 @@ wire lower_en;
 wire [18:0] addr_dram_ctrl;
 wire [15:0] data;
 // ----------------------------------------------------------
+
+// // ------------------连接dcache和data_path的信号
+// wire [63:0] dcache_addr;
+// wire [63:0] dcache_din, dcache_dout;
+// wire [2:0] dcache_rd_ctrl, dcache_wr_ctrl;
+
+// // --------------------连接dcache和dram_ctrl的信号
+// wire [63:0] dcache_dram_addr;
+// wire [63:0] dcache_dram_din, dcache_dram_dout;
+// wire [2:0] dcache_dram_rd_ctrl, dcache_dram_wr_ctrl;
+
 
 // -------------------data_path-sys_bus-----------------------
 wire [63:0] dm_addr, im_addr;
@@ -93,6 +104,23 @@ dram_ctrl dram_ctrl0(
     .lower_en(lower_en),
     .addr(addr_dram_ctrl)
 );
+
+
+// // 初始化dcache实例
+// dcache dcache0(
+//     .clk(clk),
+//     .rst(rst),
+//     .addr(cache_addr),
+//     .din(dcache_din),
+//     .dout(dcache_dout),
+//     .rd_ctrl(dcache_rd_ctrl),
+//     .wr_ctrl(dcache_wr_ctrl),
+//     .dram_addr(dcache_dram_addr),
+//     .dram_din(dcache_dram_din),
+//     .dram_dout(dcache_dram_dout),
+//     .dram_rd_ctrl(dcache_dram_rd_ctrl),
+//     .dram_wr_ctrl(dcache_dram_wr_ctrl)
+// );
 
 // 初始化dram实例
 dram dram0 (

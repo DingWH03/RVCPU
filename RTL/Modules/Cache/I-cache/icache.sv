@@ -64,8 +64,9 @@ end
 // 定义状态机
 typedef enum logic[1:0] {
     IDLE,
-    READ_MEM,
-    WRITE_CACHE
+    FETCH,
+    WRITEBACK,
+    UNCACHED
 } state_t;
 
 state_t state, next_state;
@@ -86,16 +87,16 @@ always_comb begin
             if (!write_enable && !valid_bits[index] || cache_tags[index] != tag) begin
                 mem_address = address;
                 mem_read = 1;
-                next_state = READ_MEM;
+                next_state = FETCH;
             end else begin
                 next_state = IDLE;
             end
         end
-        READ_MEM: begin
+        FETCH: begin
             mem_read = 0;
-            next_state = WRITE_CACHE;
+            next_state = WRITEBACK;
         end
-        WRITE_CACHE: begin
+        WRITEBACK: begin
             if (mem_read == 0) begin
                 cache_data[index] = mem_data;
                 cache_tags[index] = tag;
@@ -104,7 +105,7 @@ always_comb begin
                 hit = 0;  // 表示这是填充数据，不是缓存命中
                 next_state = IDLE;
             end else begin
-                next_state = WRITE_CACHE;
+                next_state = WRITEBACK;
             end
         end
         default: next_state = IDLE;
