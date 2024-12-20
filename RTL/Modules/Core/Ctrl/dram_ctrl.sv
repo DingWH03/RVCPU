@@ -1,3 +1,5 @@
+// dram_ctrl.sv
+// 专为ego1板卡自带的IS61WV12816BLL SRAM芯片设计的存储控制器，支持读写操作。
 `timescale 1ns / 1ns
 `include "include/defines.sv"
 
@@ -12,9 +14,21 @@ module dram_ctrl(
     output logic [1:0]   state,  // 状态输出
     // 连接存储芯片
     inout  logic [15:0]  data,
-    output logic         write_en,
+    output logic         write_en, // 写使能，低电平有效
+    output logic         output_en, // 读使能 低电平有效
+    output logic         sram_en, // SRAM 使能 低电平有效
+    output logic         upper_en, // 上半字节使能 高电平有效
+    output logic         lower_en, // 下半字节使能 高电平有效
     output logic [18:0]  addr
 );
+
+initial begin
+    write_en = 1'b1;
+    output_en = 1'b1;
+    sram_en = 1'b1;
+    upper_en = 1'b0;
+    lower_en = 1'b0;
+end
 
 // 内部信号
 typedef enum logic [1:0] {
@@ -32,6 +46,7 @@ logic [63:0] rd_data;     // 读出的数据
 logic [63:0] dm_addr_reg; // 锁存一下数据，防止数据只送进来一周期丢失数据
 logic [63:0] dm_din_reg; // 锁存一下数据，防止数据只送进来一周期丢失数据
 logic [19:0] state_addr;
+logic [1:0] byte_sel;   // 存储器字节选择
 
 // 地址转换
 assign state_addr = (dm_addr_reg >= 64'h80000000) ? ((dm_addr_reg - 64'h80000000)>>1) : 19'b0;
@@ -46,32 +61,78 @@ always_ff @(posedge clk or posedge rst) begin
         curr_state  <= IDLE;
         write_count <= 2'b00;
         read_count  <= 2'b00;
-        write_en <= 1'b0; // 写使能
+        write_en <= 1'b1; // 写使能
+        output_en <= 1'b1; // 读使能高电平禁用
         dm_addr_reg <= 0;
         dm_din_reg <= 0;
+        byte_sel <= 0;
+        sram_en <= 1; // 芯片高电平禁用
     end else begin
         curr_state <= next_state;
-        if (next_state != WRITE) write_en <= 1'b0;
-        else write_en <= 1'b1; 
+        if (next_state == WRITE) begin
+            write_en <= 1'b0;
+            output_en <= 1'b1;
+            sram_en <= 1'b0;
+        end
+        else if (next_state == READ) begin
+            write_en <= 1'b1;
+            output_en <= 1'b0;
+            sram_en <= 1'b0;
+        end
+        else begin
+            write_en <= 1'b1;
+            output_en <= 1'b1;
+            sram_en <= 1'b1;
+        end
         if (curr_state == IDLE && next_state != IDLE) begin
             if (next_state == WRITE)begin // 先检查写
                 dm_din_reg <= dm_din;
                 dm_addr_reg <= dm_addr;
                 case (dm_wr_ctrl)
-                    3'b001:write_count <= 2'b11;
-                    3'b010:write_count <= 2'b11;
-                    3'b011:write_count <= 2'b10;
-                    3'b100:write_count <= 2'b00;
+                    3'b001:begin 
+                        write_count <= 2'b11;
+                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b010:begin
+                        write_count <= 2'b11;
+                        byte_sel <= 2'b11;
+                    end
+                    3'b011:begin
+                        write_count <= 2'b10;
+                        byte_sel <= 2'b11;
+                    end
+                    3'b100:begin
+                        write_count <= 2'b00;
+                        byte_sel <= 2'b11;
+                    end
                 endcase
             end else begin
                 dm_addr_reg <= dm_addr;
                 case (dm_rd_ctrl)
-                    3'b001:read_count <= 2'b11;
-                    3'b010:read_count <= 2'b11;
-                    3'b011:read_count <= 2'b11;
-                    3'b100:read_count <= 2'b11;
-                    3'b101:read_count <= 2'b10;
-                    3'b110:read_count <= 2'b00;
+                    3'b001:begin
+                        read_count <= 2'b11;
+                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b010:begin
+                        read_count <= 2'b11;
+                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b011:begin
+                        read_count <= 2'b11;
+                        byte_sel <= 2'b11;
+                    end
+                    3'b100:begin
+                        read_count <= 2'b11;
+                        byte_sel <= 2'b11;
+                    end
+                    3'b101:begin
+                        read_count <= 2'b10;
+                        byte_sel <= 2'b11;
+                    end
+                    3'b110:begin
+                        read_count <= 2'b00;
+                        byte_sel <= 2'b11;
+                    end
                 endcase
             end
         end else begin
@@ -138,6 +199,9 @@ always_comb begin
         default: rd_data = 64'b0;
     endcase
 end
+
+// 字节选择逻辑
+assign {upper_en, lower_en} = byte_sel; 
 
 // 读数据输出逻辑
 assign dm_dout = rd_data;

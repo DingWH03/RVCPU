@@ -45,6 +45,10 @@ wire reg_write_WB;           // 使能控制信号
 // 连接dram和dram_ctrl的线路----------------------------------
 wire [63:0] dm_din_a;
 wire write_en;
+wire output_en;
+wire sram_en;
+wire upper_en;
+wire lower_en;
 wire [18:0] addr_dram_ctrl;
 wire [15:0] data;
 // ----------------------------------------------------------
@@ -83,6 +87,10 @@ dram_ctrl dram_ctrl0(
     .state(state),
     .data(data),
     .write_en(write_en),
+    .output_en(output_en),
+    .sram_en(sram_en),
+    .upper_en(upper_en),
+    .lower_en(lower_en),
     .addr(addr_dram_ctrl)
 );
 
@@ -91,6 +99,10 @@ dram dram0 (
     .clk(clk),
     .addr(addr_dram_ctrl),
     .write_en(write_en),
+    .output_en(output_en),
+    .sram_en(sram_en),
+    .upper_en(upper_en),
+    .lower_en(lower_en),
     .data(data)
 );
 

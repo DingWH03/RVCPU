@@ -1,10 +1,17 @@
 // dram16.sv
+// 按照ego1板卡搭载的SRAM芯片进行设计，但为节省资源容量不太大
+// 板卡搭载的IS61WV12816BLL SRAM 芯片，总容量2Mbit。该SRAM为异步式SRAM，最高存取时间可达8ns。操控简单，易于读写。
+
 `timescale 1ns / 1ns
 
 module dram(
     input logic clk,
     input logic [16:0]  addr,
-    input logic write_en,
+    input logic write_en, // 写使能 低电平有效
+    input logic output_en, // 读使能 低电平有效
+    input logic sram_en, // SRAM 使能 低电平有效
+    input logic upper_en, // 上半字节使能 高电平有效
+    input logic lower_en, // 下半字节使能 高电平有效
     inout logic [15:0] data
 );
 
@@ -20,13 +27,19 @@ end
 
 // 读写逻辑
 always @(posedge clk) begin
-    if (write_en) begin
-        // 写入数据
-        data_mem[addr] <= data; 
-        $display("WRITE to addr: %h, data: %h", addr, data);
+    if (!sram_en) begin
+        if (!write_en) begin
+            // 写入数据
+            if (upper_en) data_mem[addr][15:8] <= data[15:8];
+            if (lower_en) data_mem[addr][7:0] <= data[7:0];
+            $display("WRITE to addr: %h, data: %h", addr, data);
+        end
     end
 end
 
 // 驱动或读取数据
-assign data = write_en ? 16'bz : data_mem[addr]; // 高阻态用于读取
+assign data = (!sram_en && !write_en && !output_en) ? 
+              {upper_en ? data_mem[addr][15:8] : 8'bz, lower_en ? data_mem[addr][7:0] : 8'bz} : 
+              16'bz; // 高阻态用于读取
+
 endmodule
