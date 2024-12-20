@@ -15,12 +15,21 @@ int main(int argc, char** argv) {
     top->trace(tfp, 99); // 跟踪 99 层层次结构
     tfp->open("output/waveform.vcd");
 
-    // 仿真循环
+    // 初始化信号
     vluint64_t sim_time = 0;
+    top->clk = 0;
+    top->rst = 1; // 初始复位信号高
+
+    // 仿真循环
     while (!Verilated::gotFinish() && sim_time < 1100000) {
         // 每 5 个仿真时间单位翻转一次时钟
         if (sim_time % 5 == 0) {
             top->clk = !top->clk; // 翻转时钟
+        }
+
+        // 释放复位信号
+        if (sim_time > 10) { // 保持复位信号高至少 10 个时间单位
+            top->rst = 0; // 释放复位信号
         }
         
         top->eval();         // 评估模型

@@ -40,6 +40,10 @@ module mALU (
             stage_counter <= 7'b0;
             computation_done <= 1'b0;
             running <= 0;
+        end else if (!start&running) begin
+            stage_counter <= 7'b0;
+            computation_done <= 1'b0;
+            running <= 0;
         end else if (start&!running) begin
             for (int i = 0; i < 64; i++) begin
                 partial_products[i] <= a_abs[i] ? (b_abs << i) : 128'b0;
