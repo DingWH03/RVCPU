@@ -16,7 +16,7 @@ module data_path(
     output logic [63:0] dram_addr,
     output logic [63:0] dram_din,
     input logic [63:0] dram_dout,
-    input logic [1:0] state,
+    input logic data_ready,
 
     //--------------到rom的连线------------------------------
     output logic [63:0] rom_addr,
@@ -159,8 +159,10 @@ hazard hazard0(
     .branch_taken_EXB(branch_taken_EXB),
     .branch_target_EXB(branch_target_EXB),
     .no_forwarding_data(no_forwarding_data),
-    .state(state),
+    .data_ready(data_ready),
     .mALU_runing(mALU_runing),
+    .dm_rd_ctrl(dram_rd_ctrl),
+    .dm_wr_ctrl(dram_wr_ctrl),
     .stall_IDR(stall_IDR),
     .stall_IDC(stall_IDC),
     .stall_IFR(stall_IFR),

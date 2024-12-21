@@ -53,15 +53,16 @@ wire [18:0] addr_dram_ctrl;
 wire [15:0] data;
 // ----------------------------------------------------------
 
-// // ------------------连接dcache和data_path的信号
+// ------------------连接dcache和data_path的信号
+wire data_ready;
 // wire [63:0] dcache_addr;
 // wire [63:0] dcache_din, dcache_dout;
 // wire [2:0] dcache_rd_ctrl, dcache_wr_ctrl;
 
-// // --------------------连接dcache和dram_ctrl的信号
-// wire [63:0] dcache_dram_addr;
-// wire [63:0] dcache_dram_din, dcache_dram_dout;
-// wire [2:0] dcache_dram_rd_ctrl, dcache_dram_wr_ctrl;
+// --------------------连接dcache和dram_ctrl的信号
+wire [63:0] dcache_dram_addr;
+wire [63:0] dcache_dram_din, dcache_dram_dout;
+wire [2:0] dcache_dram_rd_ctrl, dcache_dram_wr_ctrl;
 
 
 // -------------------data_path-sys_bus-----------------------
@@ -90,11 +91,11 @@ wire [2:0] bus_wr_ctrl, bus_rd_ctrl;
 dram_ctrl dram_ctrl0(
     .clk(clk),
     .rst(rst),
-    .dm_rd_ctrl(dm_rd_ctrl_mem),
-    .dm_wr_ctrl(dm_wr_ctrl_mem),
-    .dm_addr(dm_addr_mem),
-    .dm_din(dm_din_mem),
-    .dm_dout(dm_dout_mem),
+    .dm_rd_ctrl(dcache_dram_rd_ctrl),
+    .dm_wr_ctrl(dcache_dram_wr_ctrl),
+    .dm_addr(dcache_dram_addr),
+    .dm_din(dcache_dram_din),
+    .dm_dout(dcache_dram_dout),
     .state(state),
     .data(data),
     .write_en(write_en),
@@ -106,21 +107,23 @@ dram_ctrl dram_ctrl0(
 );
 
 
-// // 初始化dcache实例
-// dcache dcache0(
-//     .clk(clk),
-//     .rst(rst),
-//     .addr(cache_addr),
-//     .din(dcache_din),
-//     .dout(dcache_dout),
-//     .rd_ctrl(dcache_rd_ctrl),
-//     .wr_ctrl(dcache_wr_ctrl),
-//     .dram_addr(dcache_dram_addr),
-//     .dram_din(dcache_dram_din),
-//     .dram_dout(dcache_dram_dout),
-//     .dram_rd_ctrl(dcache_dram_rd_ctrl),
-//     .dram_wr_ctrl(dcache_dram_wr_ctrl)
-// );
+// 初始化dcache实例
+dcache dcache0(
+    .clk(clk),
+    .rst(rst),
+    .addr(dm_addr_mem),
+    .din(dm_din_mem),
+    .dout(dm_dout_mem),
+    .rd_ctrl(dm_rd_ctrl_mem),
+    .wr_ctrl(dm_wr_ctrl_mem),
+    .data_ready(data_ready),
+    .dram_addr(dcache_dram_addr),
+    .dram_din(dcache_dram_din),
+    .dram_dout(dcache_dram_dout),
+    .dram_rd_ctrl(dcache_dram_rd_ctrl),
+    .dram_wr_ctrl(dcache_dram_wr_ctrl),
+    .state(state)
+);
 
 // 初始化dram实例
 dram dram0 (
@@ -286,7 +289,7 @@ data_path data_path0(
     .dram_addr(dm_addr_mem),
     .dram_din(dm_din_mem),
     .dram_dout(dm_dout_mem),
-    .state(state),
+    .data_ready(data_ready),
     .rom_addr(im_addr_mem0),
     .rom_dout(im_dout_mem0),
     .data_reg_read_1(data_reg_read_1),

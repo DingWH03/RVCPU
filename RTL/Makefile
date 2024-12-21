@@ -6,6 +6,8 @@ CXX = g++
 SRC_DIR = .
 INCLUDE_DIR = $(SRC_DIR)/include
 MODULES_DIR = $(SRC_DIR)/Modules
+CACHE_DIR = $(MODULES_DIR)/Cache
+DCACHE_DIR = $(CACHE_DIR)/D-cache
 PERIPS_DIR = $(MODULES_DIR)/Perips
 CORE_DIR = $(MODULES_DIR)/Core
 ALU_DIR = $(CORE_DIR)/ALU
@@ -26,6 +28,7 @@ BUILD_DIR = $(OUTPUT_DIR)/build
 
 # Source files
 DEFINES_SRC = $(INCLUDE_DIR)/defines.sv
+CACHE_SRC = $(DCACHE_DIR)/dcache.sv
 ALU_SRC = $(ALU_DIR)/ALU.v \
             $(ALU_DIR)/mALU.sv \
             $(ALU_DIR)/dALU.sv
@@ -78,10 +81,10 @@ $(TB_CPP): $(TB_CPP_CP) $(OUTPUT_DIR)
 	cp $(TB_CPP_CP) $(TB_CPP)
 
 # Verilator model generation
-$(VOBJ): $(TB_CPP) $(BUILD_DIR) $(DEFINES_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
+$(VOBJ): $(TB_CPP) $(BUILD_DIR) $(DEFINES_SRC) $(CACHE_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC) $(RVCU_SRC)
 	$(VERILATOR) --cc --exe --build --trace --Wno-lint -timescale 1ns/1ns \
 		-Mdir $(BUILD_DIR) \
-		--top-module RVCPU $(DEFINES_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC)  $(RVCU_SRC) $(TB_CPP)
+		--top-module RVCPU $(DEFINES_SRC) $(CACHE_SRC) $(ALU_SRC) $(BRANCH_SRC) $(CTRL_SRC) $(IMM_SRC) $(DRAM_SRC) $(ROM_SRC) $(REGFILE_SRC) $(GPIO_SRC) $(UART_SRC) $(SYS_BUS_SRC) $(PIPELINE_SRC)  $(RVCU_SRC) $(TB_CPP)
 
 
 # Build simulation executable
