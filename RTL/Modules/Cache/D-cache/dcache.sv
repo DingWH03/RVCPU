@@ -74,6 +74,7 @@ module dcache(
         end else if (current_cstate == IDLE && hit && wr_ctrl) begin
             temp_cache_data <= din;
             write_cache_done <= write_cache_done + 1;
+            dirty_bits[cache_index] <= 1;
             case (wr_ctrl)
                 3'b001: begin // 写8位
                     cache_data[cache_index][cache_offset * 8 +: 8] = temp_cache_data[7:0];
@@ -121,16 +122,16 @@ module dcache(
                     current_cstate <= next_cstate;
                 end
                 FETCH: begin
-                    if ((counter < CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8))&&state==2'b00) begin
+                    if ((counter < (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         counter <= counter + 1;
-                    end else if((counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8))&&state==2'b00) begin
+                    end else if((counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         current_cstate <= next_cstate;
                     end
                 end
                 WRITEBACK: begin
-                    if ((counter < CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8))&&state==2'b00) begin
+                    if ((counter < (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         counter <= counter + 1;
-                    end else if((counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8))&&state==2'b00) begin
+                    end else if((counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         current_cstate <= next_cstate;
                     end
                 end
@@ -199,25 +200,23 @@ module dcache(
             end
 
             FETCH: begin
-                if (state == 2'b00) begin // DRAM ready信号
+                dram_rd_ctrl = 3'b110; // 读64位
                 dram_addr = {cache_tags[cache_index], cache_index, counter2offset};
-                    if (counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1)) begin
-                        valid_bits[cache_index] = 1;
-                        dirty_bits[cache_index] = 0;
-                        next_cstate = IDLE;
-                    end
+                if (counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1)) begin
+                    valid_bits[cache_index] = 1;
+                    dirty_bits[cache_index] = 0;
+                    next_cstate = IDLE;
                 end
             end
 
             WRITEBACK: begin
                 dram_wr_ctrl = 3'b100; // 写64位
-                if (state == 2'b00) begin // DRAM完成信号
-                    dram_addr = {cache_tags[cache_index], cache_index, counter2offset};
-                    dram_din = cache_data[cache_index][counter * 8 +: 64];
-                    
-                    if (counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1) begin
-                        next_cstate = FETCH;
-                    end
+                dram_addr = {cache_tags[cache_index], cache_index, counter2offset};
+                dram_din = cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH];
+                if (counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1) begin
+                    next_cstate = IDLE;
+                    dirty_bits[cache_index] = 0;
+                    valid_bits[cache_index] = 1;
                 end
                 else begin
                     next_cstate = WRITEBACK;
