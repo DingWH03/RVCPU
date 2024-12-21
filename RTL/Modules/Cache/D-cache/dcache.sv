@@ -178,12 +178,15 @@ module dcache(
                                     dout = cache_data[cache_index][cache_offset * 8 +: 64];
                                 end
                             endcase
+                            data_ready = 1;
+                            next_cstate = IDLE;
                         end else if (wr_ctrl) begin
                             next_cstate = IDLE;
                             data_ready = ((write_cache_done==2'b11) ? 1 : 0);
-                        end
+                        end else begin
                         data_ready = 1;
                         next_cstate = IDLE;
+                        end
                     end else if (dirty) begin
                         next_cstate = WRITEBACK;
                     end else begin
