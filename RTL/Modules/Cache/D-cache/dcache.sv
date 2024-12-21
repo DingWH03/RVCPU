@@ -16,7 +16,7 @@ module dcache(
     input logic [63:0] dram_dout,
     output logic [2:0] dram_rd_ctrl,
     output logic [2:0] dram_wr_ctrl
-)
+);
     // Parameters
     parameter int ADDRESS_WIDTH = 64;     // 地址总线宽度
     parameter int DATA_BUS_WIDTH = 64;   // 数据总线宽度
@@ -39,49 +39,39 @@ module dcache(
 
     logic [COUNTER_LEN-1:0] counter;  // 计数器
 
-     // 地址解析
-    cache_index <= addr[INDEX_BITS + OFFSET_BITS +: INDEX_BITS];
-    cache_tag <= addr[INDEX_BITS + OFFSET_BITS + INDEX_BITS +: TAG_BITS];
-    cache_offset <= addr[OFFSET_BITS-1:0];
+    // 地址解析
+    assign cache_offset = addr[OFFSET_BITS-1:0];  // 偏移量：最低位
+    assign cache_index = addr[OFFSET_BITS +: INDEX_BITS];  // 索引：偏移量左侧的中间部分
+    assign cache_tag = addr[ADDRESS_WIDTH-1:OFFSET_BITS + INDEX_BITS];  // 标签：最高位部分
 
     logic hit;
     logic dirty;
     logic uncached;  // 地址无效
     assign uncached = addr[31:28] != 4'd8 || addr[63:32] != 32'd0;
-    assign hit = valid_bits[cache_index] && cache_tags[cache_index] == cache_tag && ~dirty_bits[cache_index];
+    assign hit = valid_bits[cache_index] && cache_tags[cache_index] == cache_tag;
     assign dirty = valid_bits[cache_index] && dirty_bits[cache_index];
 
     // 定义状态机
     typedef enum logic[1:0] {
-        IDLE,
-        FETCH,
-        WRITEBACK,
-        UNCACHED    // 地址无效
+        IDLE = 2'b00,         // 空闲状态
+        FETCH = 2'b01,        // 数据获取状态
+        WRITEBACK = 2'b10,    // 写回状态
+        UNCACHED = 2'b11      // 地址无效
     } state_t;
 
     state_t state, next_state;
 
-    always_ff @(posedge clk) begin
+    always_ff @(posedge clk or posedge rst) begin
         if (rst) begin
-            // 初始化缓存
+            state <= IDLE;
+            counter <= 0;
             for (int i = 0; i < CACHE_LINES; i++) begin
                 valid_bits[i] <= 0;
                 dirty_bits[i] <= 0;
+                cache_tags[i] <= 0;
+                cache_data[i] <= 0;
             end
-        end else begin
-           
-
-            // 读写控制
-            case (rd_ctrl)
-                
-            endcase
-        end
-    end
-
-    // 状态转换逻辑
-    always_ff @(posedge clk) begin
-        if (rst) begin
-            state <= IDLE;
+            data_ready <= 0;
         end else begin
             state <= next_state;
         end
@@ -89,38 +79,97 @@ module dcache(
 
     // 状态机主体
     always_comb begin
+        next_state = state;
+        data_ready = 0;
+        dout = 0;
+        dram_rd_ctrl = 3'b000;
+        dram_wr_ctrl = 3'b000;
+        dram_addr = 0;
+        dram_din = 0;
         case (state)
             IDLE: begin
                 if (uncached) begin
                     next_state = UNCACHED;
+                end else if (hit) begin
+                    dout = cache_data[cache_index];
+                    if (rd_ctrl) begin
+                        case (rd_ctrl)
+
+                        endcase
+                    end else if(wr_ctrl) begin
+                        case (wr_ctrl)
+                            3'b001: begin // 读8位
+                                dout = cache_data[cache_index][cache_offset * 8 +: 8];
+                            end
+                            3'b010: begin // 读16位
+                                dout = cache_data[cache_index][cache_offset * 8 +: 16];
+                            end
+                            3'b011: begin // 读32位
+                                dout = cache_data[cache_index][cache_offset * 8 +: 32];
+                            end
+                            3'b100: begin // 读64位
+                                dout = cache_data[cache_index][cache_offset * 8 +: 64];
+                            end
+                            default: begin
+                                dout = 0;
+                            end
+                        endcase
+                    end
+                    data_ready = 1;
+                    next_state = IDLE;
                 end else if (dirty) begin
-                    dram_addr = addr;
-                    dram_din = cache_data[cache_index];  // 需要改
+                    counter = 0;
+                    dram_addr = {cache_tags[cache_index], cache_index, {OFFSET_BITS{1'b0}}};
+                    dram_din = cache_data[cache_index];
                     dram_wr_ctrl = 3'b100;
                     next_state = WRITEBACK;
-                end else if(hit) begin
-                    dout = cache_data[cache_index][DATA_BUS_WIDTH-1:0];
-                    next_state = IDLE;
                 end else begin
+                    counter = 0;
                     dram_addr = addr;
                     dram_rd_ctrl = 3'b110;
                     next_state = FETCH;
                 end
             end
+
             FETCH: begin
-                if (!state) begin
-					
-				end
+                if (state == 2'b00) begin // DRAM ready信号
+                    cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH] = dram_dout;
+                    counter = counter + 1;
+                    if (counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8)) begin
+                        cache_tags[cache_index] = cache_tag;
+                        valid_bits[cache_index] = 1;
+                        dirty_bits[cache_index] = 0;
+                        dout = dram_dout;
+                        data_ready = 1;
+                        next_state = IDLE;
+                    end
+                end
             end
+
             WRITEBACK: begin
-                if (!state) begin
-					
-				end
+                if (state == 2'b00) begin // DRAM完成信号
+                    dram_din = cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH];
+                    counter = counter + 1;
+                    if (counter == CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8)) begin
+                        dram_addr = addr;
+                        dram_rd_ctrl = 3'b110;
+                        next_state = FETCH;
+                    end
+                end
             end
-            UNCACHED: begin     // 访问到地址无效的存储地址
-				state_nxt = IDLE;
+
+            UNCACHED: begin
+                dram_addr = addr;
+                dram_din = din;
+                if (rd_ctrl != 0) begin
+                    dram_rd_ctrl = rd_ctrl;
+                    dout = dram_dout;
+                end else if (wr_ctrl != 0) begin
+                    dram_wr_ctrl = wr_ctrl;
+                end
+                data_ready = 1;
+                next_state = IDLE;
             end
-            default: next_state = IDLE;
         endcase
     end
 
