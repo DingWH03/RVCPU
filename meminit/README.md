@@ -372,7 +372,7 @@ _start:
     xor x14, x10, x11  # x14 = x10 ^ x11 = 0b01100110
 
     # 测试加载/存储
-    li x15, 0x1000      # x15 = 0x1000 (地址)
+    li x15, 0x80000000      # x15 = 0x80000000 (地址)
     li x16, 42          # x16 = 42 (数据)
     sw x16, 0(x15)      # 将 42 存储到地址 0x1000
     lw x17, 0(x15)      # 从地址 0x1000 加载数据到 x17（x17 应该等于 42）
@@ -413,7 +413,7 @@ done:
     2c:        00b57633        and x12 x10 x11
     30:        00b566b3        or x13 x10 x11
     34:        00b54733        xor x14 x10 x11
-    38:        000017b7        lui x15 0x1
+    38:        800007b7        lui x15 0x80000
     3c:        02a00813        addi x16 x0 42
     40:        0107a023        sw x16 0 x15
     44:        0007a883        lw x17 0 x15
@@ -434,94 +434,9 @@ done:
 ### 3. 机器代码
 
 ```text
-00500093 00700113 002081b3 00a00213 00300293 40520333 00600393 00900413 028384b3 0aa00513 0cc00593 
-00b57633 00b566b3 00b54733 000017b7 02a00813 0107a023 0007a883 00000913 00100993 01390463 00a00a13 
-01400a93 0040006f 06300b13
+00500093 00700113 002081b3 00a00213 00300293 40520333 00600393 
+00900413 028384b3 0aa00513 0cc00593 00b57633 00b566b3 00b54733 
+800007b7 02a00813 0107a023 0007a883 00000913 00100993 01390463 
+00a00a13 01400a93 0040006f 06300b13
 
-```
-
-## 六、测试跳转指令
-
-### 1. 汇编语言
-
-```asm
-    .globl _start
-
-_start:
-    # 初始化寄存器
-    li x1, 5           # x1 = 5
-    li x2, 3           # x2 = 3
-    li x3, 0           # x3 = 0 (用于存储结果)
-    li x4, 10          # x4 = 10 (用于存储结果)
-
-    # 测试 beq (如果 x1 == x2，则跳转)
-    beq x1, x2, label_equal    # 如果 x1 == x2 跳转到 label_equal
-    li x3, 1            # 如果不跳转，设置 x3 = 1
-
-label_equal:
-    # 测试 bne (如果 x1 != x2，则跳转)
-    bne x1, x2, label_not_equal # 如果 x1 != x2 跳转到 label_not_equal
-    li x3, 2            # 如果不跳转，设置 x3 = 2
-
-label_not_equal:
-    # 测试 bgt (如果 x1 > x2，则跳转)
-    bgt x1, x2, label_greater  # 如果 x1 > x2 跳转到 label_greater
-    li x3, 3            # 如果不跳转，设置 x3 = 3
-
-label_greater:
-    # 测试 bge (如果 x1 >= x2，则跳转)
-    bge x1, x2, label_greater_equal # 如果 x1 >= x2 跳转到 label_greater_equal
-    li x3, 4            # 如果不跳转，设置 x3 = 4
-
-label_greater_equal:
-    # 测试 jal (无条件跳转)
-    jal label_jal        # 无条件跳转到 label_jal
-    li x3, 5            # 如果跳转失败，设置 x3 = 5
-
-label_jal:
-
-    # 程序结束
-    j _start            # 跳转回 _start（使程序处于死循环状态，模拟一直运行）
-
-```
-
-### 2. 翻译后
-
-```text
-
-00000000 <_start>:
-    0:        00500093        addi x1 x0 5
-    4:        00300113        addi x2 x0 3
-    8:        00000193        addi x3 x0 0
-    c:        00a00213        addi x4 x0 10
-    10:        00208463        beq x1 x2 8 <label_equal>
-    14:        00100193        addi x3 x0 1
-
-00000018 <label_equal>:
-    18:        00209463        bne x1 x2 8 <label_not_equal>
-    1c:        00200193        addi x3 x0 2
-
-00000020 <label_not_equal>:
-    20:        00114463        blt x2 x1 8 <label_greater>
-    24:        00300193        addi x3 x0 3
-
-00000028 <label_greater>:
-    28:        0020d463        bge x1 x2 8 <label_greater_equal>
-    2c:        00400193        addi x3 x0 4
-
-00000030 <label_greater_equal>:
-    30:        008000ef        jal x1 8 <label_jal>
-    34:        00500193        addi x3 x0 5
-
-00000038 <label_jal>:
-    38:        fc9ff06f        jal x0 -56 <_start>
-
-```
-
-### 3. 机器语言
-
-```text
-00500093 00300113 00000193 00a00213 00208463 00100193
-00209463 00200193 00114463 00300193 0020d463 00400193
-008000ef fc9ff06f
 ```

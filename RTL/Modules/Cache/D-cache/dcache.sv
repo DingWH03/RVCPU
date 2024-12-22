@@ -67,39 +67,6 @@ module dcache(
     logic [1:0] write_cache_done;
 
     logic [DATA_BUS_WIDTH-1:0] temp_cache_data; // 缓存数据暂存
-    always_ff @(posedge clk or posedge rst) begin
-        if (rst) begin
-            write_cache_done <= 0;
-            temp_cache_data <= 0;
-        end else if (current_cstate == IDLE && hit && wr_ctrl) begin
-            temp_cache_data <= din;
-            write_cache_done <= write_cache_done + 1;
-            dirty_bits[cache_index] <= 1;
-            case (wr_ctrl)
-                3'b001: begin // 写8位
-                    cache_data[cache_index][cache_offset * 8 +: 8] = temp_cache_data[7:0];
-                end
-                3'b010: begin // 写16位
-                    cache_data[cache_index][cache_offset * 8 +: 16] = temp_cache_data[15:0];
-                end
-                3'b011: begin // 写32位
-                    cache_data[cache_index][cache_offset * 8 +: 32] = temp_cache_data[31:0];
-                end
-                3'b100: begin // 写64位
-                    cache_data[cache_index][cache_offset * 8 +: 64] = temp_cache_data;
-                end
-            endcase
-        end else if (state == 2'b00 && current_cstate == FETCH) begin
-            temp_cache_data <= dram_dout;
-            cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH] <= temp_cache_data;
-            current_cstate <= next_cstate;
-            cache_tags[cache_index] <= cache_tag;
-        end else begin
-            temp_cache_data <= 0;
-            write_cache_done <= 0;
-        end
-    end
-
 
     // 定义状态机
     typedef enum logic[1:0] {
@@ -115,17 +82,49 @@ module dcache(
         if (rst) begin
             current_cstate <= IDLE;
             counter <= 0;
+            write_cache_done <= 0;
+            temp_cache_data <= 0;
         end else begin
             case(current_cstate)
                 IDLE: begin
                     counter <= 0;
                     current_cstate <= next_cstate;
+                    if (hit && wr_ctrl) begin
+                        temp_cache_data <= din;
+                        write_cache_done <= write_cache_done + 1;
+                        dirty_bits[cache_index] <= 1;
+                        case (wr_ctrl)
+                            3'b001: begin // 写8位
+                                cache_data[cache_index][cache_offset * 8 +: 8] = temp_cache_data[7:0];
+                            end
+                            3'b010: begin // 写16位
+                                cache_data[cache_index][cache_offset * 8 +: 16] = temp_cache_data[15:0];
+                            end
+                            3'b011: begin // 写32位
+                                cache_data[cache_index][cache_offset * 8 +: 32] = temp_cache_data[31:0];
+                            end
+                            3'b100: begin // 写64位
+                                cache_data[cache_index][cache_offset * 8 +: 64] = temp_cache_data;
+                            end
+                        endcase
+                    end else begin
+                        temp_cache_data <= 0;
+                        write_cache_done <= 0;
+                    end
                 end
                 FETCH: begin
                     if ((counter < (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         counter <= counter + 1;
                     end else if((counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         current_cstate <= next_cstate;
+                    end
+                    if (state == 2'b00) begin
+                        temp_cache_data <= dram_dout;
+                        cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH] <= temp_cache_data;
+                        cache_tags[cache_index] <= cache_tag;
+                    end else begin
+                        temp_cache_data <= 0;
+                        write_cache_done <= 0;
                     end
                 end
                 WRITEBACK: begin
