@@ -199,3 +199,329 @@ error:
 0062a023 0002a383 00730463 0140006f 00428293 fffe0e13  
 fe0e14e3 00000013 00000013  
 ```
+
+## 四、使用串口发送Hello,world
+
+### 1. 汇编
+
+```asm
+.globl _start
+
+# 定义 UART 基地址
+.equ UART_BASE, 0x50000000
+.equ UART_TX_DATA, UART_BASE       # 数据寄存器
+.equ UART_STATUS, 0x50000004    # 状态寄存器
+.equ UART_TX_BUSY_BIT, 31          # TX_BUSY 位位置
+
+_start:
+    # 初始化字符串和寄存器
+    li x1, 0x48                    # x1 = 'H' (ASCII: 0x48)
+    li x2, 0x65                    # x2 = 'e' (ASCII: 0x65)
+    li x3, 0x6C                    # x3 = 'l' (ASCII: 0x6C)
+    li x4, 0x6C                    # x4 = 'l' (ASCII: 0x6C)
+    li x5, 0x6F                    # x5 = 'o' (ASCII: 0x6F)
+    li x6, 0x2C                    # x6 = ',' (ASCII: 0x2C)
+    li x7, 0x20                    # x7 = ' ' (ASCII: 0x20)
+    li x8, 0x77                    # x8 = 'w' (ASCII: 0x77)
+    li x9, 0x6F                    # x9 = 'o' (ASCII: 0x6F)
+    li x10, 0x72                   # x10 = 'r' (ASCII: 0x72)
+    li x11, 0x6C                   # x11 = 'l' (ASCII: 0x6C)
+    li x12, 0x64                   # x12 = 'd' (ASCII: 0x64)
+    li x13, 0x0A                   # x13 = '\n' (ASCII: 0x0A)
+
+    # 加载 UART 寄存器地址
+    li x14, UART_TX_DATA           # UART 数据寄存器地址
+    li x15, UART_STATUS            # UART 状态寄存器地址
+
+    # 初始化计数器
+    li x16, 13                     # x16 = 字符数量（计数器）
+    li x17, 0                      # x17 = 当前发送索引
+
+send:
+    # 判断是否发送完成
+    beq x17, x16, end              # 如果索引等于计数器，则跳转到 end
+
+    # 将字符加载到 x31（发送寄存器）
+    addi x31, x0, 0                 # 清零 t0->x31
+    addi x31, x1, 0                # x31 = x1 + 偏移量
+    # 进行寄存器平移（x1 -> x0, x2 -> x1, ..., x13 -> x12）
+    addi x0, x1, 0                 # x1 = x0
+    add x1, x2, x0                 # x2 = x1
+    add x2, x3, x0                 # x3 = x2
+    add x3, x4, x0                 # x4 = x3
+    add x4, x5, x0                 # x5 = x4
+    add x5, x6, x0                 # x6 = x5
+    add x6, x7, x0                 # x7 = x6
+    add x7, x8, x0                 # x8 = x7
+    add x8, x9, x0                 # x9 = x8
+    add x9, x10, x0                # x10 = x9
+    add x10, x11, x0               # x11 = x10
+    add x11, x12, x0               # x12 = x11
+    add x12, x13, x0               # x13 = x12
+
+    # 等待 TX 不忙
+wait_tx:
+    lw x30, 0(x15)                  # 读取 UART 状态寄存器
+    srai x30, x30, UART_TX_BUSY_BIT  # 提取 TX_BUSY 位
+    andi x30, x30, 1                 # 判断 TX_BUSY 是否为 1
+    bnez x30, wait_tx               # 如果忙，继续等待
+
+    # 写入数据寄存器
+    sb x31, 0(x14)                  # 将字符写入 UART 数据寄存器
+
+    # 增加索引，发送下一个字符
+    addi x17, x17, 1               # 索引加 1
+    j send                         # 跳转到 send 发送下一个字符
+
+end:
+    j end                          # 程序结束，进入死循环
+
+```
+
+### 2. 翻译后
+
+```text
+
+00000000 <_start>:
+    0:        04800093        addi x1 x0 72
+    4:        06500113        addi x2 x0 101
+    8:        06c00193        addi x3 x0 108
+    c:        06c00213        addi x4 x0 108
+    10:        06f00293        addi x5 x0 111
+    14:        02c00313        addi x6 x0 44
+    18:        02000393        addi x7 x0 32
+    1c:        07700413        addi x8 x0 119
+    20:        06f00493        addi x9 x0 111
+    24:        07200513        addi x10 x0 114
+    28:        06c00593        addi x11 x0 108
+    2c:        06400613        addi x12 x0 100
+    30:        00a00693        addi x13 x0 10
+    34:        50000737        lui x14 0x50000
+    38:        500007b7        lui x15 0x50000
+    3c:        00478793        addi x15 x15 4
+    40:        00d00813        addi x16 x0 13
+    44:        00000893        addi x17 x0 0
+
+00000048 <send>:
+    48:        05088e63        beq x17 x16 92 <end>
+    4c:        00000f93        addi x31 x0 0
+    50:        00008f93        addi x31 x1 0
+    54:        00008013        addi x0 x1 0
+    58:        000100b3        add x1 x2 x0
+    5c:        00018133        add x2 x3 x0
+    60:        000201b3        add x3 x4 x0
+    64:        00028233        add x4 x5 x0
+    68:        000302b3        add x5 x6 x0
+    6c:        00038333        add x6 x7 x0
+    70:        000403b3        add x7 x8 x0
+    74:        00048433        add x8 x9 x0
+    78:        000504b3        add x9 x10 x0
+    7c:        00058533        add x10 x11 x0
+    80:        000605b3        add x11 x12 x0
+    84:        00068633        add x12 x13 x0
+
+00000088 <wait_tx>:
+    88:        0007af03        lw x30 0 x15
+    8c:        41ff5f13        srai x30 x30 31
+    90:        001f7f13        andi x30 x30 1
+    94:        fe0f1ae3        bne x30 x0 -12 <wait_tx>
+    98:        01f70023        sb x31 0 x14
+    9c:        00188893        addi x17 x17 1
+    a0:        fa9ff06f        jal x0 -88 <send>
+
+000000a4 <end>:
+    a4:        0000006f        jal x0 0 <end>
+
+```
+
+### 3. 机器语言
+
+```text
+04800093 06500113 06c00193 06c00213 06f00293 02c00313 02000393 07700413 06f00493 07200513 06c00593 06400613 00a00693 50000737 500007b7 00478793 00d00813 00000893 05088e63 00000f93 00008f93 00008013 000100b3 00018133 000201b3 00028233 000302b3 00038333 000403b3 00048433 000504b3 00058533 000605b3 00068633 0007af03 41ff5f13 001f7f13 fe0f1ae3 01f70023 00188893 fa9ff06f 0000006f
+
+```
+
+## 五、测试RV64I简单运算
+
+### 1. 汇编代码
+
+```asm
+    .globl _start
+
+_start:
+    # 测试加法
+    li x1, 5           # x1 = 5
+    li x2, 7           # x2 = 7
+    add x3, x1, x2     # x3 = x1 + x2 = 5 + 7 = 12
+
+    # 测试减法
+    li x4, 10          # x4 = 10
+    li x5, 3           # x5 = 3
+    sub x6, x4, x5     # x6 = x4 - x5 = 10 - 3 = 7
+
+    # 测试乘法
+    li x7, 6           # x7 = 6
+    li x8, 9           # x8 = 9
+    mul x9, x7, x8     # x9 = x7 * x8 = 6 * 9 = 54
+
+    # 测试按位与、或、异或
+    li x10, 0b10101010  # x10 = 0b10101010
+    li x11, 0b11001100  # x11 = 0b11001100
+    and x12, x10, x11  # x12 = x10 & x11 = 0b10001000
+    or  x13, x10, x11  # x13 = x10 | x11 = 0b11101110
+    xor x14, x10, x11  # x14 = x10 ^ x11 = 0b01100110
+
+    # 测试加载/存储
+    li x15, 0x1000      # x15 = 0x1000 (地址)
+    li x16, 42          # x16 = 42 (数据)
+    sw x16, 0(x15)      # 将 42 存储到地址 0x1000
+    lw x17, 0(x15)      # 从地址 0x1000 加载数据到 x17（x17 应该等于 42）
+
+    # 测试条件跳转
+    li x18, 0           # x18 = 0
+    li x19, 1           # x19 = 1
+    beq x18, x19, equal # 如果 x18 == x19，则跳转到 equal 标签
+    li x20, 10          # 如果 x18 != x19，则设置 x20 = 10
+
+equal:
+    li x21, 20          # 如果跳转到 equal，设置 x21 = 20
+
+    # 测试无条件跳转
+    j done               # 跳转到 done 标签
+
+done:
+    li x22, 99          # 设置 x22 = 99（表示程序结束）
+
+```
+
+### 2. 翻译代码
+
+```text
+
+00000000 <_start>:
+    0:        00500093        addi x1 x0 5
+    4:        00700113        addi x2 x0 7
+    8:        002081b3        add x3 x1 x2
+    c:        00a00213        addi x4 x0 10
+    10:        00300293        addi x5 x0 3
+    14:        40520333        sub x6 x4 x5
+    18:        00600393        addi x7 x0 6
+    1c:        00900413        addi x8 x0 9
+    20:        028384b3        mul x9 x7 x8
+    24:        0aa00513        addi x10 x0 170
+    28:        0cc00593        addi x11 x0 204
+    2c:        00b57633        and x12 x10 x11
+    30:        00b566b3        or x13 x10 x11
+    34:        00b54733        xor x14 x10 x11
+    38:        000017b7        lui x15 0x1
+    3c:        02a00813        addi x16 x0 42
+    40:        0107a023        sw x16 0 x15
+    44:        0007a883        lw x17 0 x15
+    48:        00000913        addi x18 x0 0
+    4c:        00100993        addi x19 x0 1
+    50:        01390463        beq x18 x19 8 <equal>
+    54:        00a00a13        addi x20 x0 10
+
+00000058 <equal>:
+    58:        01400a93        addi x21 x0 20
+    5c:        0040006f        jal x0 4 <done>
+
+00000060 <done>:
+    60:        06300b13        addi x22 x0 99
+
+```
+
+### 3. 机器代码
+
+```text
+00500093 00700113 002081b3 00a00213 00300293 40520333 00600393 00900413 028384b3 0aa00513 0cc00593 
+00b57633 00b566b3 00b54733 000017b7 02a00813 0107a023 0007a883 00000913 00100993 01390463 00a00a13 
+01400a93 0040006f 06300b13
+
+```
+
+## 六、测试跳转指令
+
+### 1. 汇编语言
+
+```asm
+    .globl _start
+
+_start:
+    # 初始化寄存器
+    li x1, 5           # x1 = 5
+    li x2, 3           # x2 = 3
+    li x3, 0           # x3 = 0 (用于存储结果)
+    li x4, 10          # x4 = 10 (用于存储结果)
+
+    # 测试 beq (如果 x1 == x2，则跳转)
+    beq x1, x2, label_equal    # 如果 x1 == x2 跳转到 label_equal
+    li x3, 1            # 如果不跳转，设置 x3 = 1
+
+label_equal:
+    # 测试 bne (如果 x1 != x2，则跳转)
+    bne x1, x2, label_not_equal # 如果 x1 != x2 跳转到 label_not_equal
+    li x3, 2            # 如果不跳转，设置 x3 = 2
+
+label_not_equal:
+    # 测试 bgt (如果 x1 > x2，则跳转)
+    bgt x1, x2, label_greater  # 如果 x1 > x2 跳转到 label_greater
+    li x3, 3            # 如果不跳转，设置 x3 = 3
+
+label_greater:
+    # 测试 bge (如果 x1 >= x2，则跳转)
+    bge x1, x2, label_greater_equal # 如果 x1 >= x2 跳转到 label_greater_equal
+    li x3, 4            # 如果不跳转，设置 x3 = 4
+
+label_greater_equal:
+    # 测试 jal (无条件跳转)
+    jal label_jal        # 无条件跳转到 label_jal
+    li x3, 5            # 如果跳转失败，设置 x3 = 5
+
+label_jal:
+
+    # 程序结束
+    j _start            # 跳转回 _start（使程序处于死循环状态，模拟一直运行）
+
+```
+
+### 2. 翻译后
+
+```text
+
+00000000 <_start>:
+    0:        00500093        addi x1 x0 5
+    4:        00300113        addi x2 x0 3
+    8:        00000193        addi x3 x0 0
+    c:        00a00213        addi x4 x0 10
+    10:        00208463        beq x1 x2 8 <label_equal>
+    14:        00100193        addi x3 x0 1
+
+00000018 <label_equal>:
+    18:        00209463        bne x1 x2 8 <label_not_equal>
+    1c:        00200193        addi x3 x0 2
+
+00000020 <label_not_equal>:
+    20:        00114463        blt x2 x1 8 <label_greater>
+    24:        00300193        addi x3 x0 3
+
+00000028 <label_greater>:
+    28:        0020d463        bge x1 x2 8 <label_greater_equal>
+    2c:        00400193        addi x3 x0 4
+
+00000030 <label_greater_equal>:
+    30:        008000ef        jal x1 8 <label_jal>
+    34:        00500193        addi x3 x0 5
+
+00000038 <label_jal>:
+    38:        fc9ff06f        jal x0 -56 <_start>
+
+```
+
+### 3. 机器语言
+
+```text
+00500093 00300113 00000193 00a00213 00208463 00100193
+00209463 00200193 00114463 00300193 0020d463 00400193
+008000ef fc9ff06f
+```
