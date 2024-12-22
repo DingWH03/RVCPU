@@ -19,7 +19,7 @@ always @(*) begin
         3'b010: BrE = (signed_REG1 == signed_REG2) ? 1 : 0;
 
         // 3'b001: BNE (Branch if Not Equal)
-        3'b001: BrE = (signed_REG1 != signed_REG2) ? 1 : 0;
+        3'b011: BrE = (signed_REG1 != signed_REG2) ? 1 : 0;
 
         // 3'b100: BLT (Branch if Less Than, signed)
         3'b100: BrE = (signed_REG1 < signed_REG2) ? 1 : 0;
