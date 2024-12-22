@@ -92,7 +92,6 @@ module dcache(
                     if (hit && wr_ctrl) begin
                         temp_cache_data <= din;
                         write_cache_done <= write_cache_done + 1;
-                        dirty_bits[cache_index] <= 1;
                         case (wr_ctrl)
                             3'b001: begin // 写8位
                                 cache_data[cache_index][cache_offset * 8 +: 8] = temp_cache_data[7:0];
@@ -182,6 +181,7 @@ module dcache(
                             next_cstate = IDLE;
                         end else if (wr_ctrl) begin
                             next_cstate = IDLE;
+                            dirty_bits[cache_index] = 1;
                             data_ready = ((write_cache_done==2'b11) ? 1 : 0);
                         end else begin
                         data_ready = 1;
