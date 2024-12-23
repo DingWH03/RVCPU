@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
     top->rst = 1; // 初始复位信号高
 
     // 仿真循环
-    while (!Verilated::gotFinish() && sim_time < 1100000) {
+    while (!Verilated::gotFinish() && sim_time < 5100000) {
         // 每 5 个仿真时间单位翻转一次时钟
         if (sim_time % 5 == 0) {
             top->clk = !top->clk; // 翻转时钟

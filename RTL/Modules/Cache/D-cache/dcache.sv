@@ -20,8 +20,8 @@ module dcache(
     // Parameters
     parameter int ADDRESS_WIDTH = 64;     // 地址总线宽度
     parameter int DATA_BUS_WIDTH = 64;   // 数据总线宽度
-    parameter int CACHE_LINE_SIZE = 64;  // 缓存行大小（单位：字节）
-    parameter int CACHE_LINES = 256;     // 缓存行数量
+    parameter int CACHE_LINE_SIZE = 16;  // 缓存行大小（单位：字节）
+    parameter int CACHE_LINES = 16;     // 缓存行数量
 
     // Derived parameters
     parameter int OFFSET_BITS = $clog2(CACHE_LINE_SIZE);  // 偏移长度
@@ -83,14 +83,13 @@ module dcache(
             current_cstate <= IDLE;
             counter <= 0;
             write_cache_done <= 0;
-            temp_cache_data <= 0;
         end else begin
             case(current_cstate)
                 IDLE: begin
                     counter <= 0;
                     current_cstate <= next_cstate;
                     if (hit && wr_ctrl) begin
-                        temp_cache_data <= din;
+                        
                         write_cache_done <= write_cache_done + 1;
                         case (wr_ctrl)
                             3'b001: begin // 写8位
@@ -107,23 +106,21 @@ module dcache(
                             end
                         endcase
                     end else begin
-                        temp_cache_data <= 0;
                         write_cache_done <= 0;
                     end
                 end
                 FETCH: begin
+                    cache_tags[cache_index] <= cache_tag;
                     if ((counter < (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         counter <= counter + 1;
                     end else if((counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1))&&state==2'b00) begin
                         current_cstate <= next_cstate;
                     end
                     if (state == 2'b00) begin
-                        temp_cache_data <= dram_dout;
                         cache_data[cache_index][counter * DATA_BUS_WIDTH +: DATA_BUS_WIDTH] <= temp_cache_data;
-                        cache_tags[cache_index] <= cache_tag;
                     end else begin
-                        temp_cache_data <= 0;
                         write_cache_done <= 0;
+                        
                     end
                 end
                 WRITEBACK: begin
@@ -180,6 +177,7 @@ module dcache(
                             data_ready = 1;
                             next_cstate = IDLE;
                         end else if (wr_ctrl) begin
+                            temp_cache_data = din;
                             next_cstate = IDLE;
                             dirty_bits[cache_index] = 1;
                             data_ready = ((write_cache_done==2'b11) ? 1 : 0);
@@ -200,7 +198,8 @@ module dcache(
 
             FETCH: begin
                 dram_rd_ctrl = 3'b110; // 读64位
-                dram_addr = {cache_tags[cache_index], cache_index, counter2offset};
+                temp_cache_data = dram_dout;
+                dram_addr = {addr[ADDRESS_WIDTH-1:OFFSET_BITS], counter2offset};
                 if (counter == (CACHE_LINE_SIZE / (DATA_BUS_WIDTH / 8) - 1)) begin
                     valid_bits[cache_index] = 1;
                     dirty_bits[cache_index] = 0;

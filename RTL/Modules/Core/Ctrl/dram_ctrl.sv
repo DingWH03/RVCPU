@@ -1,7 +1,7 @@
 // dram_ctrl.sv
 // 专为ego1板卡自带的IS61WV12816BLL SRAM芯片设计的存储控制器，支持读写操作。
 `timescale 1ns / 1ns
-`include "include/defines.sv"
+`include "defines.sv"
 
 module dram_ctrl(
     input  logic         clk,
@@ -22,14 +22,6 @@ module dram_ctrl(
     output logic [18:0]  addr
 );
 
-initial begin
-    write_en = 1'b1;
-    output_en = 1'b1;
-    sram_en = 1'b1;
-    upper_en = 1'b0;
-    lower_en = 1'b0;
-end
-
 // 内部信号
 typedef enum logic [1:0] {
     IDLE    = 2'b00, // 空闲
@@ -38,8 +30,8 @@ typedef enum logic [1:0] {
 } state_t;
 
 state_t curr_state, next_state;
-logic [1:0] write_count;  // 写操作计数器
-logic [1:0] read_count;   // 读操作计数器
+logic [2:0] count;  // 写操作计数器
+// logic [2:0] count;   // 读操作计数器
 logic [15:0] wr_data;     // 当前写入的数据
 logic [63:0] data_buffer; // 数据缓冲区
 logic [63:0] rd_data;     // 读出的数据
@@ -50,7 +42,7 @@ logic [1:0] byte_sel;   // 存储器字节选择
 
 // 地址转换
 assign state_addr = (dm_addr_reg >= 64'h80000000) ? ((dm_addr_reg - 64'h80000000)>>1) : 19'b0;
-assign addr = state_addr + (2'b11 - write_count);
+assign addr = state_addr + (3'b100 - count);
 
 // 数据总线双向控制
 assign data = (curr_state == WRITE) ? wr_data : 16'bz;
@@ -59,95 +51,67 @@ assign data = (curr_state == WRITE) ? wr_data : 16'bz;
 always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
         curr_state  <= IDLE;
-        write_count <= 2'b00;
-        read_count  <= 2'b00;
-        write_en <= 1'b1; // 写使能
-        output_en <= 1'b1; // 读使能高电平禁用
+        // count <= 3'b00;
+        count  <= 3'b00;
         dm_addr_reg <= 0;
         dm_din_reg <= 0;
-        byte_sel <= 0;
-        sram_en <= 1; // 芯片高电平禁用
     end else begin
         curr_state <= next_state;
-        if (next_state == WRITE) begin
-            write_en <= 1'b0;
-            output_en <= 1'b1;
-            sram_en <= 1'b0;
-        end
-        else if (next_state == READ) begin
-            write_en <= 1'b1;
-            output_en <= 1'b0;
-            sram_en <= 1'b0;
-        end
-        else begin
-            write_en <= 1'b1;
-            output_en <= 1'b1;
-            sram_en <= 1'b1;
-        end
+        
         if (curr_state == IDLE && next_state != IDLE) begin
             if (next_state == WRITE)begin // 先检查写
                 dm_din_reg <= dm_din;
                 dm_addr_reg <= dm_addr;
                 case (dm_wr_ctrl)
                     3'b001:begin 
-                        write_count <= 2'b11;
-                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                        count <= 3'b100;
                     end
                     3'b010:begin
-                        write_count <= 2'b11;
-                        byte_sel <= 2'b11;
+                        count <= 3'b100;
                     end
                     3'b011:begin
-                        write_count <= 2'b10;
-                        byte_sel <= 2'b11;
+                        count <= 3'b011;
                     end
                     3'b100:begin
-                        write_count <= 2'b00;
-                        byte_sel <= 2'b11;
+                        count <= 3'b001;
                     end
                 endcase
             end else begin
                 dm_addr_reg <= dm_addr;
                 case (dm_rd_ctrl)
                     3'b001:begin
-                        read_count <= 2'b11;
-                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                        count <= 3'b100;
                     end
                     3'b010:begin
-                        read_count <= 2'b11;
-                        byte_sel <= dm_addr[0]?2'b10:2'b01;
+                        count <= 3'b100;
                     end
                     3'b011:begin
-                        read_count <= 2'b11;
-                        byte_sel <= 2'b11;
+                        count <= 3'b100;
                     end
                     3'b100:begin
-                        read_count <= 2'b11;
-                        byte_sel <= 2'b11;
+                        count <= 3'b100;
                     end
                     3'b101:begin
-                        read_count <= 2'b10;
-                        byte_sel <= 2'b11;
+                        count <= 3'b011;
                     end
                     3'b110:begin
-                        read_count <= 2'b00;
-                        byte_sel <= 2'b11;
+                        count <= 3'b001;
                     end
                 endcase
             end
         end else begin
             case (curr_state)
                 IDLE: begin
-                    write_count <= 2'b00;
-                    read_count  <= 2'b00;
+                    // count <= 3'b00;
+                    count  <= 3'b00;
                     dm_addr_reg <= 0;
                     dm_din_reg <= 0;
                 end
                 WRITE: begin
-                    write_count <= write_count + 2'b01;
+                    count <= count + 3'b01;
                 end
                 READ: begin
-                    read_count <= read_count + 2'b01;
+                    count <= count + 3'b01;
                 end
             endcase
         end
@@ -166,32 +130,91 @@ always_comb begin
             end
         end
         WRITE: begin
-            if (write_count == 2'b11) begin
+            if (count == 3'b100) begin
                 next_state = IDLE;
             end
         end
         READ: begin
-            if (read_count == 2'b11) begin
+            if (count == 3'b100) begin
                 next_state = IDLE;
             end
+        end
+    endcase
+end
+
+always_comb begin
+    case (next_state)
+        IDLE: begin
+                write_en = 1'b1;
+                output_en = 1'b1;
+                sram_en = 1'b1;
+        end
+        WRITE: begin
+            write_en = 1'b0;
+            output_en = 1'b1;
+            sram_en = 1'b0;
+            case (dm_wr_ctrl)
+                    3'b001:begin 
+                        byte_sel = dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b010:begin
+                        byte_sel = 2'b11;
+                    end
+                    3'b011:begin
+                        byte_sel = 2'b11;
+                    end
+                    3'b100:begin
+                        byte_sel = 2'b11;
+                    end
+                endcase
+        end
+        READ: begin
+            write_en = 1'b1;
+            output_en = 1'b0;
+            sram_en = 1'b0;
+            case (dm_rd_ctrl)
+                    3'b001:begin
+                        byte_sel = dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b010:begin
+                        byte_sel = dm_addr[0]?2'b10:2'b01;
+                    end
+                    3'b011:begin
+                        byte_sel = 2'b11;
+                    end
+                    3'b100:begin
+                        byte_sel = 2'b11;
+                    end
+                    3'b101:begin
+                        byte_sel = 2'b11;
+                    end
+                    3'b110:begin
+                        byte_sel = 2'b11;
+                    end
+                endcase
+        end
+        default: begin
+            write_en = 1'b1;
+            output_en = 1'b1;
+            sram_en = 1'b1;
         end
     endcase
 end
 
 // 写数据输出逻辑
 always_comb begin
-    case (write_count)
-        2'b00: wr_data = dm_din_reg[63:48];
-        2'b01: wr_data = dm_din_reg[47:32];
-        2'b10: wr_data = dm_din_reg[31:16];
-        2'b11: wr_data = dm_din_reg[15:0];
+    case (count)
+        3'b001: wr_data = dm_din_reg[63:48];
+        3'b010: wr_data = dm_din_reg[47:32];
+        3'b011: wr_data = dm_din_reg[31:16];
+        3'b100: wr_data = dm_din_reg[15:0];
         default: wr_data = 16'b0;
     endcase
 end
 
 // 读数据输出逻辑
 always_comb begin
-    case (read_count)
+    case (count)
         2'b00: rd_data[63:48] = data;
         2'b01: rd_data[47:32] = data;
         2'b10: rd_data[31:16] = data;
@@ -201,7 +224,7 @@ always_comb begin
 end
 
 // 字节选择逻辑
-assign {upper_en, lower_en} = byte_sel; 
+assign {upper_en, lower_en} = ~byte_sel; 
 
 // 读数据输出逻辑
 assign dm_dout = rd_data;
