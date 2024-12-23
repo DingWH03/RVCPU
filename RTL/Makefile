@@ -34,10 +34,10 @@ ALU_SRC = $(ALU_DIR)/ALU.v \
             $(ALU_DIR)/dALU.sv
 BRANCH_SRC = $(BRANCH_DIR)/branch.v
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
-            $(CTRL_DIR)/dram_ctrl.sv \
+            $(CTRL_DIR)/dram_ctrl.v \
             $(CTRL_DIR)/mctrl.sv
 IMM_SRC = $(IMM_DIR)/imm.v
-DRAM_SRC = $(DRAM_DIR)/dram16.sv
+DRAM_SRC = $(DRAM_DIR)/dram.sv
 ROM_SRC = $(ROM_DIR)/rom.v
 REGFILE_SRC = $(REGFILE_DIR)/regfileI.v 
 UART_SRC = $(UART_DIR)/uart.v \
