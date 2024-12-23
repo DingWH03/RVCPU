@@ -95,8 +95,7 @@ dram_ctrl dram_ctrl0(
     .dm_wr_ctrl(dcache_dram_wr_ctrl),
     .dm_addr(dcache_dram_addr),
     .dm_din(dcache_dram_din),
-    .dm_dout(dcache_dram_dout),
-    .state(state)
+    .dm_dout(dcache_dram_dout)
 );
 
 
@@ -114,8 +113,7 @@ dcache dcache0(
     .dram_din(dcache_dram_din),
     .dram_dout(dcache_dram_dout),
     .dram_rd_ctrl(dcache_dram_rd_ctrl),
-    .dram_wr_ctrl(dcache_dram_wr_ctrl),
-    .state(state)
+    .dram_wr_ctrl(dcache_dram_wr_ctrl)
 );
 
 // 初始化rom实例
