@@ -29,17 +29,17 @@ BUILD_DIR = $(OUTPUT_DIR)/build
 # Source files
 DEFINES_SRC = $(INCLUDE_DIR)/defines.sv
 CACHE_SRC = $(DCACHE_DIR)/dcache.sv
-ALU_SRC = $(ALU_DIR)/ALU.v \
+ALU_SRC = $(ALU_DIR)/ALU.sv \
             $(ALU_DIR)/mALU.sv \
             $(ALU_DIR)/dALU.sv
-BRANCH_SRC = $(BRANCH_DIR)/branch.v
+BRANCH_SRC = $(BRANCH_DIR)/branch.sv
 CTRL_SRC = $(CTRL_DIR)/ctrl.sv \
             $(CTRL_DIR)/dram_ctrl.v \
             $(CTRL_DIR)/mctrl.sv
-IMM_SRC = $(IMM_DIR)/imm.v
+IMM_SRC = $(IMM_DIR)/imm.sv
 DRAM_SRC = $(DRAM_DIR)/dram.sv
 ROM_SRC = $(ROM_DIR)/rom.v
-REGFILE_SRC = $(REGFILE_DIR)/regfileI.v 
+REGFILE_SRC = $(REGFILE_DIR)/regfileI.sv 
 UART_SRC = $(UART_DIR)/uart.v \
             $(UART_DIR)/uart_rx.v \
             $(UART_DIR)/uart_tx.v
